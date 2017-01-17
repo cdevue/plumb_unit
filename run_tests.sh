@@ -1,8 +1,7 @@
 #!/bin/bash -e
 
-docker_image="multimediabs/plomb_unit:centos6"
-docker_image="multimediabs/plomb_unit:debian_jessie"
-docker_image="multimediabs/plomb_unit_centos"
+docker_image="multimediabs/plumb_unit:debian_jessie"
+docker_image="multimediabs/plumb_unit:centos6"
 
 cd $(dirname $0)
 test_name=$(basename $(cd ..; pwd))
