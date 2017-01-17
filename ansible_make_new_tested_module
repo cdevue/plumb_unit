@@ -1,0 +1,49 @@
+#!/bin/bash
+
+module=${1-test.d}
+
+#cd $(dirname $0)/..
+[ ! -d roles ]     && mkdir roles;     cd roles
+[ ! -d ${module} ] && mkdir ${module}; cd ${module}
+[ ! -d tasks ]     && mkdir tasks
+[ ! -d tests ]     && mkdir tests; cd tests
+
+run_test="run_tests.sh"
+bash_unit="bash_unit"
+ansible_cfg="ansible.cfg"
+
+tools=$(dirname $0)
+[ ! -f ${run_test} ]    && cp ${tools}/${run_test}    .
+[ ! -f ${bash_unit} ]   && bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
+[ ! -f ${ansible_cfg} ] && cp ${tools}/${ansible_cfg} .
+
+if [ ! -f "test_${module}" ]
+then
+  cat << __EOF__ >test_${module}
+#!/bin/bash
+
+test_failed() {
+  run_ansible 
+  assert_equals "false" "true"
+}
+
+setup() {
+  mkdir /tmp/ansible/group_vars -p
+
+  cat << EOF > /tmp/ansible/playbook.yml
+- hosts: all
+  roles:
+    - role: ${module}
+EOF
+}
+
+run_ansible() {
+  assert "sudo -u rpaulson ansible-playbook --verbose --diff -i 'localhost,' --connection=local /tmp/ansible/playbook.yml"
+}
+
+__EOF__
+fi
+
+echo "module [${module}] created" >&2
+printf "to run tests:\n" >&2
+printf "\tcd $(dirname $(pwd))\n\t./tests/run_tests.sh\n" >&2
