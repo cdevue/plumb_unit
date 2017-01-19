@@ -18,8 +18,6 @@ GREEN="${ESCAPE}[92m"
 YELLOW="${ESCAPE}[93m"
 BLUE="${ESCAPE}[94m"
 
-output="/dev/null"
-
 docker_flags_file=".docker_flags"
 
 root_path="../../.."
@@ -59,7 +57,6 @@ do
   case $name in
     v)
       verbose_flag=1
-      output=$(tty)
       ;;
     d)
       debug_flag=1
@@ -70,6 +67,8 @@ do
   esac
 done
 shift $((OPTIND-1))
+
+[ $verbose_flag -eq 0 ] && output=">/dev/null 2>&1" || output="2>&1"
 
 if [ $# -gt 0 ] ; then
   tests_list=$(echo $@ | tr ' ' '\n' | sed 's/^/-p /' | xargs echo)
@@ -84,7 +83,7 @@ else
   if [ -f Dockerfile ]
   then
     format ${BLUE} -n "Building ${test_name} ${docker_build_flags} container..."
-    docker build -t ${test_name} ${docker_build_flags} . >${output} 2>&1 || exit 42
+    eval docker build -t ${test_name} ${docker_build_flags} . ${output} || exit 42
     format ${GREEN} "DONE"
   fi
   
@@ -95,7 +94,7 @@ else
   [ -t 1 ] && docker_exec_flags="$docker_exec_flags -t"
   docker_flags="$docker_flags $([ -f ${docker_flags_file} ] && cat ${docker_flags_file} || true)"
 
-  echo "Running docker with flags [${docker_flags}]" >${output} 2>&1
+  eval echo "Running docker with flags [${docker_flags}]" ${output}
   container=$(docker run -d ${docker_flags} ${docker_volumes} ${docker_image})
   trap "docker rm --force $container >/dev/null" EXIT
 
