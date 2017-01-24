@@ -15,6 +15,10 @@ run_test="run_tests.sh"
 bash_unit="bash_unit"
 ansible_cfg="ansible.cfg"
 
+cd ${role_dir}/tasks
+
+[ -f main.yml ] || touch main.yml
+
 cd ${role_dir}/tests
 
 [ -f ${run_test} ] || cp ${tools}/${run_test} .
