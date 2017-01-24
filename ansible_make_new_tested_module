@@ -1,21 +1,28 @@
 #!/bin/bash
 
-module=${1-test.d}
+if [ $# -lt 1 ] ; then
+  echo "le nom du rôle doit être passé en paramètre." >&2
+  exit 1
+fi
+module=$1
 
-#cd $(dirname $0)/..
-[ ! -d roles ]     && mkdir roles;     cd roles
-[ ! -d ${module} ] && mkdir ${module}; cd ${module}
-[ ! -d tasks ]     && mkdir tasks
-[ ! -d tests ]     && mkdir tests; cd tests
+tools=$(readlink -f $(dirname $0))
+base_dir=$(readlink -f .)
+module_dir=${base_dir}/roles/${module}
+mkdir -p ${module_dir}/{tasks,tests}
 
 run_test="run_tests.sh"
 bash_unit="bash_unit"
 ansible_cfg="ansible.cfg"
 
-tools=$(dirname $0)
-[ ! -f ${run_test} ]    && cp ${tools}/${run_test}    .
-[ ! -f ${bash_unit} ]   && bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
-[ ! -f ${ansible_cfg} ] && cp ${tools}/${ansible_cfg} .
+cd ${module_dir}/tests
+
+[ -f ${run_test} ] || cp ${tools}/${run_test} .
+[ -f ${bash_unit} ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
+[ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
+
+[ -x ${run_test} ] || chmod +x ${run_test}
+[ -x ${bash_unit} ] || chmod +x ${run_test}
 
 if [ ! -f "test_${module}" ]
 then
@@ -45,5 +52,8 @@ __EOF__
 fi
 
 echo "module [${module}] created" >&2
-printf "to run tests:\n" >&2
-printf "\tcd $(dirname $(pwd))\n\t./tests/run_tests.sh\n" >&2
+echo "to run tests :" >&2
+echo -e "\tcd $(dirname $(pwd))
+\t./tests/run_tests.sh" >&2
+
+cd ${base_dir}

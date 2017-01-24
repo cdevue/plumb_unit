@@ -20,10 +20,9 @@ BLUE="${ESCAPE}[94m"
 
 docker_flags_file=".docker_flags"
 
-root_path="../../.."
-roles_path="${root_path}/roles"
-inside_roles_path="/etc/ansible"
-inside_tests_path="${inside_roles_path}/roles/${test_name}/tests"
+role_path="$(readlink -f ..)"
+inside_role_path="/etc/ansible/roles/${test_name}"
+inside_tests_path="${inside_role_path}/tests"
 
 verbose_flag=0
 debug_flag=0
@@ -74,7 +73,8 @@ if [ $# -gt 0 ] ; then
   tests_list=$(echo $@ | tr ' ' '\n' | sed 's/^/-p /' | xargs echo)
 fi
 
-run_test="${inside_tests_path}/bash_unit ${tests_list} ${inside_tests_path}/test_${test_name}${distrib}"
+bash_unit="${inside_tests_path}/bash_unit"
+run_test="${bash_unit} ${tests_list} ${inside_tests_path}/test_${test_name}${distrib}"
 
 if [ -f /.dockerenv -a $(id -u) -eq 0 ]
 then
@@ -89,7 +89,7 @@ else
   
   docker_flags="--privileged"
   docker_exec_flags="-i"
-  docker_volumes="-v $(cd ${root_path};pwd):${inside_roles_path}"
+  docker_volumes="-v $(cd ${role_path};pwd):${inside_role_path}"
 
   [ -t 1 ] && docker_exec_flags="$docker_exec_flags -t"
   docker_flags="$docker_flags $([ -f ${docker_flags_file} ] && cat ${docker_flags_file} || true)"
