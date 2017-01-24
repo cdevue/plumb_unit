@@ -87,7 +87,7 @@ else
     format ${GREEN} "DONE"
   fi
   
-  docker_flags="--privileged"
+#  docker_flags="--privileged"
   docker_exec_flags="-i"
   docker_volumes="-v $(cd ${role_path};pwd):${inside_role_path}"
 
