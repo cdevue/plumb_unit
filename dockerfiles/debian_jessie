@@ -26,8 +26,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y locales python-pip python-dev \
                        git sudo aptitude vim \
                        libffi-dev libssl-dev curl \
-                       net-tools libyaml-dev
-RUN pip install --upgrade PyYAML jinja2 paramiko ansible dnspython setuptools pyasn1
+                       net-tools \
+                       libyaml-dev python-yaml python-dns \
+                       python-pyasn1 python-jinja2
+
+#RUN pip install --upgrade PyYAML jinja2 paramiko ansible dnspython setuptools pyasn1
+RUN pip install --upgrade paramiko ansible setuptools
 
 # Optimize first run of apt ansible module
 RUN ansible -i localhost, -c local all -m apt -a "update_cache=yes"
