@@ -4,18 +4,18 @@ if [ $# -lt 1 ] ; then
   echo "le nom du rôle doit être passé en paramètre." >&2
   exit 1
 fi
-module=$1
+role=$1
 
 tools=$(readlink -f $(dirname $0))
 base_dir=$(readlink -f .)
-module_dir=${base_dir}/roles/${module}
-mkdir -p ${module_dir}/{tasks,tests}
+role_dir=${base_dir}/roles/${role}
+mkdir -p ${role_dir}/{tasks,tests}
 
 run_test="run_tests.sh"
 bash_unit="bash_unit"
 ansible_cfg="ansible.cfg"
 
-cd ${module_dir}/tests
+cd ${role_dir}/tests
 
 [ -f ${run_test} ] || cp ${tools}/${run_test} .
 [ -f ${bash_unit} ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
@@ -24,9 +24,9 @@ cd ${module_dir}/tests
 [ -x ${run_test} ] || chmod +x ${run_test}
 [ -x ${bash_unit} ] || chmod +x ${run_test}
 
-if [ ! -f "test_${module}" ]
+if [ ! -f "test_${role}" ]
 then
-  cat << __EOF__ >test_${module}
+  cat << __EOF__ >test_${role}
 #!/bin/bash
 
 test_failed() {
@@ -40,7 +40,7 @@ setup() {
   cat << EOF > /tmp/ansible/playbook.yml
 - hosts: all
   roles:
-    - role: ${module}
+    - role: ${role}
 EOF
 }
 
@@ -51,7 +51,7 @@ run_ansible() {
 __EOF__
 fi
 
-echo "module [${module}] created" >&2
+echo "role [${role}] created" >&2
 echo "to run tests :" >&2
 echo -e "\tcd $(dirname $(pwd))
 \t./tests/run_tests.sh" >&2
