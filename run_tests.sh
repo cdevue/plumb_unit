@@ -98,11 +98,10 @@ else
   container=$(docker run -d ${docker_flags} ${docker_volumes} ${docker_image})
   trap "docker rm --force $container >/dev/null" EXIT
 
-  #wait for systemd to be ready
-  while ! docker exec $container systemctl status >/dev/null ; do sleep 1 ; done
-
   if grep jessie <(echo $distrib_name) >/dev/null
   then
+    #wait for systemd to be ready
+    while ! docker exec $container systemctl status >/dev/null ; do sleep 1 ; done
     #wait for tmpfiles cleaner to be started so that it does not clean /tmp while tests are running
     while ! docker exec $container systemctl status systemd-tmpfiles-clean.timer >/dev/null ; do sleep 1 ; done
   fi
