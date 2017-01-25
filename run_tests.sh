@@ -98,8 +98,14 @@ else
   container=$(docker run -d ${docker_flags} ${docker_volumes} ${docker_image})
   trap "docker rm --force $container >/dev/null" EXIT
 
-  #wait for init to startup at most for 2 second and go on, whatever happens
-  timeout 2 /bin/bash -c "while ! docker exec -i $container systemctl status >/dev/null ; do echo -n ; done" || true
+  #wait for systemd to be ready
+  while ! docker exec $container systemctl status >/dev/null ; do sleep 1 ; done
+
+  if grep jessie <(echo $distrib_name) >/dev/null
+  then
+    #wait for tmpfiles cleaner to be started so that it does not clean /tmp while tests are running
+    while ! docker exec $container systemctl status systemd-tmpfiles-clean.timer >/dev/null ; do sleep 1 ; done
+  fi
 
   if [ $debug_flag -eq 1 ]
   then
