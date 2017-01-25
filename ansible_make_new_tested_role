@@ -79,7 +79,7 @@ fi
 
 echo "role [${role}] created" >&2
 echo "to run tests :" >&2
-echo -e "\tcd ${role_dir}/tests
-\t./run_tests.sh" >&2
+echo "  cd ${role_dir}/tests" >&2
+echo "  ./run_tests.sh" >&2
 
 cd ${base_dir}
