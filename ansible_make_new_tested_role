@@ -1,10 +1,29 @@
 #!/bin/bash
 
-if [ $# -lt 1 ] ; then
-  echo "le nom du rôle doit être passé en paramètre." >&2
+usage() {
+  [ $# -gt 0 ] && echo $@ >&2
+  echo "usage : $(basename $0) [-p] [-h] role_name
+  creates an ansible role with tests
+  -p = testing containers will have 'privileged' option
+  -h = display this help" >&2
   exit 1
-fi
-role=$1
+}
+
+privileged=0
+while getopts p option
+do
+  case $option in
+    p)
+      privileged=1
+      ;;
+    h)
+      usage
+      ;;
+  esac
+done
+shift $(($OPTIND-1))
+
+[ $# -gt 0 ] && role=$1 || usage "le nom du rôle doit être passé en paramètre."
 
 tools=$(readlink -f $(dirname $0))
 base_dir=$(readlink -f .)
@@ -22,11 +41,14 @@ cd ${role_dir}/tasks
 cd ${role_dir}/tests
 
 [ -f ${run_test} ] || cp ${tools}/${run_test} .
+[ -x ${run_test} ] || chmod +x ${run_test}
+[ ${privileged} -eq 1 ] && sed -r -i 's/^#( *docker_flags="--privileged")/\1/' ${run_test}
+
 [ -f ${bash_unit} ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
+[ -x ${bash_unit} ] || chmod +x ${run_test}
+
 [ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
 
-[ -x ${run_test} ] || chmod +x ${run_test}
-[ -x ${bash_unit} ] || chmod +x ${run_test}
 
 if [ ! -f "test_${role}" ]
 then
@@ -57,7 +79,7 @@ fi
 
 echo "role [${role}] created" >&2
 echo "to run tests :" >&2
-echo -e "\tcd $(dirname $(pwd))
-\t./tests/run_tests.sh" >&2
+echo -e "\tcd ${role_dir}/tests
+\t./run_tests.sh" >&2
 
 cd ${base_dir}
