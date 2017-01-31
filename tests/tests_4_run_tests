@@ -9,7 +9,7 @@ test_ko_test_is_ko() {
 }
 
 test_d_option_launches_debug_docker() {
-  expect <<EOF
+  expect -d <<EOF
 set timeout 10
 log_user 0
 spawn ./run_tests.sh -d
