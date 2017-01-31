@@ -13,10 +13,12 @@ test_d_option_launches_debug_docker() {
 set timeout 10
 log_user 0
 spawn ./run_tests.sh -d
+sleep 5
+send "export PS1=__PROMPT__\n"
 expect {
   timeout { send_user "Failed to get prompt\n"; exit 1 }
   eof { send_user "Failed to launch docker \n"; exit 1 }
-  -re ".root@.* /.#."
+  -re "__PROMPT__."
 }
 send "uname\n"
 expect {
