@@ -1,7 +1,6 @@
 #!/bin/bash
 
 test_dockerfile_jessie_runs_jessie_debian() {
-  ln -s run_tests.sh run_tests_jessie.sh
   assert 'expect -d <<EOF
 set timeout 10
 log_user 0
@@ -24,16 +23,14 @@ EOF
 
 setup() {
   test_prefix=test_ # workaround for bash_unit not to try to run this test on first pass
-  cat > test_plumb_unit <<EOF
+  cat > test_plumb_unit_jessie <<EOF
 #!/bin/bash
-${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
-${test_prefix}is_one_equal_to_two() { assert_equals 1 2 "oups"; }
-${test_prefix}roles_in_etc_ansible_roles() { assert "ls /etc/ansible/roles/plumb_unit"; }
 EOF
+  ln -s run_tests.sh run_tests_jessie.sh
 }
 
 teardown() {
-  rm test_plumb_unit
+  rm test_plumb_unit_jessie
   rm run_tests_*.sh 2>/dev/null
 }
 
