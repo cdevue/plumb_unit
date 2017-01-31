@@ -7,6 +7,11 @@ sudo: required
 services:
   - docker
 
+addons:
+  apt:
+    packages:
+    - expect
+
 install:
   - curl -o bash_unit "https://raw.githubusercontent.com/pgrange/bash_unit/master/bash_unit"
   - chmod +x bash_unit
