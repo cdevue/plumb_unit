@@ -19,4 +19,4 @@ install:
   - docker pull multimediabs/plumb_unit:debian_jessie
 
 script:
-  - ./bash_unit tests/tests_4_run_tests 
+  - ./bash_unit tests/tests_4_run_tests* 
