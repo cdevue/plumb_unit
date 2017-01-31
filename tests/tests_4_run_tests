@@ -9,6 +9,8 @@ test_ko_test_is_ko() {
 }
 
 test_d_option_launches_debug_docker() {
+### PROMPT here is based on the fact that default is centos6
+### if change needed, different prompts can be found in the distrib specific tests
   assert 'expect -d <<EOF
 set timeout 10
 log_user 0
@@ -46,7 +48,7 @@ spawn ./run_tests_jessie.sh -d
 expect {
   timeout { send_user "Failed to get prompt\n"; exit 1 }
   eof { send_user "Failed to launch docker \n"; exit 1 }
-  -re ".root@.* /.# .*"
+  -re "root@.*:/# .*"
 }
 send "cat /etc/issue.net\n"
 expect {
@@ -57,7 +59,6 @@ send "exit\n"
 expect "exit"
 EOF
 '
-  rm run_tests_jessie.sh
 }
 
 test_dockerfile_centos6_runs_centos_6() {
@@ -80,7 +81,6 @@ send "exit\n"
 expect "exit"
 EOF
 '
-  rm run_tests_centos6.sh
 }
 
 test_mounts_common_roles_in_etc_ansible_roles() {
@@ -99,6 +99,7 @@ EOF
 
 teardown() {
   rm test_plumb_unit
+  rm run_tests_*.sh 2>/dev/null
 }
 
 assert "expect -v" "expect needs to be installed to run this tests"
