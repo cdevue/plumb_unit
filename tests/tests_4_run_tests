@@ -9,23 +9,6 @@ test_ko_test_is_ko() {
 }
 
 test_d_option_launches_debug_docker() {
-  expect -d <<EOF
-set timeout 10
-log_user 0
-spawn ./run_tests.sh -d
-expect {
-  timeout { send_user "Failed to get prompt\n"; exit 1 }
-  eof { send_user "Failed to launch docker \n"; exit 1 }
-  -re ".root@.* /.# .*"
-}
-send "uname\n"
-expect {
-  timeout { send_user "Did not answered simple command\n"; exit 1 }
-  "Linux"
-}
-send "exit\n"
-expect "exit"
-EOF
   assert 'expect <<EOF
 set timeout 10
 log_user 0
