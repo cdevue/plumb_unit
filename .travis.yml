@@ -1,0 +1,15 @@
+---
+language: python
+python: "2.7"
+
+sudo: required
+
+services:
+  - docker
+
+install:
+  - curl -o bash_unit "https://raw.githubusercontent.com/pgrange/bash_unit/master/bash_unit"
+  - chmod +x bash_unit
+
+script:
+  - bash_unit tests/tests_4_run_tests 
