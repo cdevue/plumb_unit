@@ -1,0 +1,5 @@
+= Testing the tests
+
+To run the tests, simply issue the follownig command :
+
+ ./bash_unit tests_4_run_tests 
