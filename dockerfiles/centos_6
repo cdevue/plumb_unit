@@ -13,8 +13,9 @@ RUN yum install -y python-pip python-devel gcc.x86_64 openssl-devel libffi-devel
 RUN pip install --upgrade pip
 RUN pip install --upgrade PyYAML jinja2 paramiko ansible dnspython setuptools pyasn1
 
-RUN yum install -y centos-release-SCL
-RUN yum install -y python27
+RUN rpm -Uvh https://centos6.iuscommunity.org/ius-release.rpm
+RUN yum -y install python27 python27-devel python27-pip python27-setuptools python27-virtualenv --enablerepo=ius
+RUN ln -s /usr/bin/python2.7 /usr/local/bin
 
 # Add a local user to avoid running ansible as root. This user has a name
 RUN useradd -ms /bin/bash -c "Robert Paulson" rpaulson
