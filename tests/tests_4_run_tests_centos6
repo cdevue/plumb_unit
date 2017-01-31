@@ -29,7 +29,7 @@ setup() {
   test_prefix=test_ # workaround for bash_unit not to try to run this test on first pass
   cat > test_plumb_unit_centos6 <<EOF
 #!/bin/bash
-${test_prefix}python_2_7() { assert "python -V | grep '^Python 2.7.'" "oups"; }
+${test_prefix}python_2_7() { assert "python -V | grep ' 2\.7'" "oups"; }
 EOF
   ln -s run_tests.sh run_tests_centos6.sh
 }
