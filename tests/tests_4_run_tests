@@ -98,7 +98,7 @@ teardown() {
 }
 
 assert "expect -v" "expect needs to be installed to run this tests"
-echo
-echo "These tests need the base containers to be OK."
-echo "It will fail if jessie_docnfc and wheezy_docnfc are not built."
-echo
+#echo
+#echo "These tests need the base containers to be OK."
+#echo "It will fail if jessie_docnfc and wheezy_docnfc are not built."
+#echo
