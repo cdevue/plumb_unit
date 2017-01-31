@@ -1,0 +1,9 @@
+= plumb unit
+
+Plumb unit creates roles with testing framework or adds testing framework to existing role.
+
+Place yourself in the root dir of your roles and launch :
+
+ /path/to/plumb_unit/ansible_make_new_tested_role my_new_role
+
+This will create a _roles_ directory in which the _my_new_role_ is created. The role itself only contains an empty tasks/main.yml and a tests directory.
