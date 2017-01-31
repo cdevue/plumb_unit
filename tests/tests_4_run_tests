@@ -9,7 +9,7 @@ test_ko_test_is_ko() {
 }
 
 test_d_option_launches_debug_docker() {
-  assert 'expect <<EOF
+  assert 'expect -d <<EOF
 set timeout 10
 log_user 0
 spawn ./run_tests.sh -d
@@ -37,47 +37,51 @@ test_v_option_launches_verbose_docker() {
   rm /tmp/expect.$$
 }
 
-#test_dockerfile_jessie_runs_jessie_debian() {
-#  assert 'expect <<EOF
-#set timeout 10
-#log_user 0
-#spawn ./run_tests_jessie.sh -d
-#expect {
-#  timeout { send_user "Failed to get prompt\n"; exit 1 }
-#  eof { send_user "Failed to launch docker \n"; exit 1 }
-#  "root@*:/test/tests/tools#"
-#}
-#send "cat /etc/issue.net\n"
-#expect {
-#  timeout { send_user "Did not match debian version\n"; exit 1 }
-#  "Debian GNU/Linux 8"
-#}
-#send "exit\n"
-#expect "exit"
-#EOF
-#'
-#}
+test_dockerfile_jessie_runs_jessie_debian() {
+  ln -s run_tests.sh run_tests_jessie.sh
+  assert 'expect -d <<EOF
+set timeout 10
+log_user 0
+spawn ./run_tests_jessie.sh -d
+expect {
+  timeout { send_user "Failed to get prompt\n"; exit 1 }
+  eof { send_user "Failed to launch docker \n"; exit 1 }
+  -re ".root@.* /.# .*"
+}
+send "cat /etc/issue.net\n"
+expect {
+  timeout { send_user "Did not match debian version\n"; exit 1 }
+  "Debian GNU/Linux 8"
+}
+send "exit\n"
+expect "exit"
+EOF
+'
+  rm run_tests_jessie.sh
+}
 
-#test_dockerfile_wheezy_runs_wheezy_debian() {
-#  assert 'expect <<EOF
-#set timeout 10
-#log_user 0
-#spawn ./run_tests_wheezy.sh -d
-#expect {
-#  timeout { send_user "Failed to get prompt\n"; exit 1 }
-#  eof { send_user "Failed to launch docker \n"; exit 1 }
-#  "root@*:/test/tests/tools#"
-#}
-#send "cat /etc/issue.net\n"
-#expect {
-#  timeout { send_user "Did not match debian version\n"; exit 1 }
-#  "Debian GNU/Linux 7"
-#}
-#send "exit\n"
-#expect "exit"
-#EOF
-#'
-#}
+test_dockerfile_centos6_runs_centos_6() {
+  ln -s run_tests.sh run_tests_centos6.sh
+  assert 'expect -d <<EOF
+set timeout 10
+log_user 0
+spawn ./run_tests_centos6.sh -d
+expect {
+  timeout { send_user "Failed to get prompt\n"; exit 1 }
+  eof { send_user "Failed to launch docker \n"; exit 1 }
+  -re ".root@.* /.# .*"
+}
+send "cat /etc/issue.net\n"
+expect {
+  timeout { send_user "Did not match debian version\n"; exit 1 }
+  "CentOS release 6"
+}
+send "exit\n"
+expect "exit"
+EOF
+'
+  rm run_tests_centos6.sh
+}
 
 test_mounts_common_roles_in_etc_ansible_roles() {
   assert "./run_tests.sh roles_in_etc_ansible_roles"
