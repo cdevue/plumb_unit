@@ -12,4 +12,4 @@ install:
   - chmod +x bash_unit
 
 script:
-  - bash_unit tests/tests_4_run_tests 
+  - ./bash_unit tests/tests_4_run_tests 
