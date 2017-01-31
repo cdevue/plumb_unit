@@ -73,6 +73,9 @@ if [ $# -gt 0 ] ; then
   tests_list=$(echo $@ | tr ' ' '\n' | sed 's/^/-p /' | xargs echo)
 fi
 
+[ -f bash_unit ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
+[ -x bash_unit ] || chmod +x bash_unit
+
 bash_unit="${inside_tests_path}/bash_unit"
 run_test="${bash_unit} ${tests_list} ${inside_tests_path}/test_${test_name}${distrib}"
 

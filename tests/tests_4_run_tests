@@ -1,0 +1,104 @@
+#!/bin/bash
+
+test_ok_test_is_ok() {
+  assert "./run_tests.sh -p one_equal_to_one test_plumb_unit"
+}
+
+test_ko_test_is_ko() {
+  assert_fail "./run_tests.sh -p one_equal_to_two test_plumb_unit"
+}
+
+test_d_option_launches_debug_docker() {
+  assert 'expect <<EOF
+set timeout 10
+log_user 0
+spawn ./run_tests.sh -d
+expect {
+  timeout { send_user "Failed to get prompt\n"; exit 1 }
+  eof { send_user "Failed to launch docker \n"; exit 1 }
+  -re ".root@.* /.#."
+}
+send "uname\n"
+expect {
+  timeout { send_user "Did not answered simple command\n"; exit 1 }
+  "Linux"
+}
+send "exit\n"
+expect "exit"
+EOF
+'
+}
+
+test_v_option_launches_verbose_docker() {
+  assert "./run_tests.sh -v -p one_equal_to_one test_plumb_unit > /tmp/expect.$$ 2>&1"
+#  assert "grep -e 'Sending build context to Docker daemon' /tmp/expect.$$" "expected verbose docker output didn't come"
+#  assert "grep -e 'Successfully built' /tmp/expect.$$" "expected verbose docker output didn't come"
+  assert "grep -e 'Running docker with flags' /tmp/expect.$$" "expected verbose docker output didn't come"
+  rm /tmp/expect.$$
+}
+
+#test_dockerfile_jessie_runs_jessie_debian() {
+#  assert 'expect <<EOF
+#set timeout 10
+#log_user 0
+#spawn ./run_tests_jessie.sh -d
+#expect {
+#  timeout { send_user "Failed to get prompt\n"; exit 1 }
+#  eof { send_user "Failed to launch docker \n"; exit 1 }
+#  "root@*:/test/tests/tools#"
+#}
+#send "cat /etc/issue.net\n"
+#expect {
+#  timeout { send_user "Did not match debian version\n"; exit 1 }
+#  "Debian GNU/Linux 8"
+#}
+#send "exit\n"
+#expect "exit"
+#EOF
+#'
+#}
+
+#test_dockerfile_wheezy_runs_wheezy_debian() {
+#  assert 'expect <<EOF
+#set timeout 10
+#log_user 0
+#spawn ./run_tests_wheezy.sh -d
+#expect {
+#  timeout { send_user "Failed to get prompt\n"; exit 1 }
+#  eof { send_user "Failed to launch docker \n"; exit 1 }
+#  "root@*:/test/tests/tools#"
+#}
+#send "cat /etc/issue.net\n"
+#expect {
+#  timeout { send_user "Did not match debian version\n"; exit 1 }
+#  "Debian GNU/Linux 7"
+#}
+#send "exit\n"
+#expect "exit"
+#EOF
+#'
+#}
+
+test_mounts_common_roles_in_etc_ansible_roles() {
+  assert "./run_tests.sh roles_in_etc_ansible_roles"
+}
+
+setup() {
+  test_prefix=test_ # workaround for bash_unit not to try to run this test on first pass
+  cat > test_plumb_unit <<EOF
+#!/bin/bash
+${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
+${test_prefix}is_one_equal_to_two() { assert_equals 1 2 "oups"; }
+${test_prefix}roles_in_etc_ansible_roles() { assert "ls /etc/ansible/roles/plumb_unit"; }
+EOF
+}
+
+teardown() {
+  rm test_plumb_unit
+}
+
+assert "expect -v" "expect needs to be installed to run this tests"
+echo
+echo "These tests need the base containers to be OK."
+echo "It will fail if jessie_docnfc and wheezy_docnfc are not built."
+echo
