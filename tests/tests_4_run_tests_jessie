@@ -1,3 +1,5 @@
+#!/bin/bash
+
 test_dockerfile_jessie_runs_jessie_debian() {
   ln -s run_tests.sh run_tests_jessie.sh
   assert 'expect -d <<EOF

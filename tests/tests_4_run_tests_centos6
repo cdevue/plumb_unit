@@ -1,5 +1,10 @@
+#!/bin/bash
+
+test_python_versionn_is_2_7() {
+  assert "./run_tests_centos6.sh -p python_2_7 test_plumb_unit"
+}
+
 test_dockerfile_centos6_runs_centos_6() {
-  ln -s run_tests.sh run_tests_centos6.sh
   assert 'expect -d <<EOF
 set timeout 10
 log_user 0
@@ -24,10 +29,9 @@ setup() {
   test_prefix=test_ # workaround for bash_unit not to try to run this test on first pass
   cat > test_plumb_unit <<EOF
 #!/bin/bash
-${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
-${test_prefix}is_one_equal_to_two() { assert_equals 1 2 "oups"; }
-${test_prefix}roles_in_etc_ansible_roles() { assert "ls /etc/ansible/roles/plumb_unit"; }
+${test_prefix}python_2_7() { assert "python -V | grep '^Python 2.7.'" "oups"; }
 EOF
+  ln -s run_tests.sh run_tests_centos6.sh
 }
 
 teardown() {
