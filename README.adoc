@@ -1,5 +1,7 @@
 = plumb unit
 
+image:https://travis-ci.org/multimediabs/plumb_unit.svg?branch=master[Build Status,link=https://travis-ci.org/multimediabs/plumb_unit]
+
 Plumb unit creates roles with testing framework or adds testing framework to existing role.
 
 Place yourself in the root dir of your roles and launch :
