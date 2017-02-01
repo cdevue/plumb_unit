@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
 docker_image="multimediabs/plumb_unit:centos6"
+init=system5
 
 cd $(dirname $0)
 test_name=$(basename $(cd ..; pwd))
@@ -8,7 +9,7 @@ distrib_name=$(basename $0 | sed -r 's/run_tests_*(.*).sh/\1/')
 if [ $distrib_name ] 
 then
   distrib=_${distrib_name}
-  [ "${distrib_name}" == "jessie" ] && docker_image="multimediabs/plumb_unit:debian_jessie"
+  [ "${distrib_name}" == "jessie" ] && docker_image="multimediabs/plumb_unit:debian_jessie" && init=systemd
   [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
 fi
 
@@ -88,7 +89,7 @@ else
     format ${GREEN} "DONE"
   fi
   
-  docker_flags="--privileged"
+  [ $init == "systemd" ] && docker_flags="--privileged"
   docker_exec_flags="-i"
   docker_volumes="-v $(cd ${role_path};pwd):${inside_role_path}"
 
