@@ -1,9 +1,5 @@
 #!/bin/bash
 
-test_python_versionn_is_2_7() {
-  assert "./run_tests_centos6.sh -p python_2_7 test_plumb_unit_centos6"
-}
-
 test_dockerfile_centos6_runs_centos_6() {
   assert 'expect -d <<EOF
 set timeout 10
@@ -29,7 +25,6 @@ setup() {
   test_prefix=test_ # workaround for bash_unit not to try to run this test on first pass
   cat > test_plumb_unit_centos6 <<EOF
 #!/bin/bash
-${test_prefix}python_2_7() { assert "python -V 2>&1 | grep '^Python 2.7.'" "oups"; }
 EOF
   ln -s run_tests.sh run_tests_centos6.sh
 }
