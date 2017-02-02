@@ -22,9 +22,9 @@ BLUE="${ESCAPE}[94m"
 
 docker_flags_file=".docker_flags"
 
-role_path="$(readlink -f ..)"
-inside_role_path="/etc/ansible/roles/${test_name}"
-inside_tests_path="${inside_role_path}/tests"
+roles_path="$(readlink -f ../..)"
+inside_roles_path="/etc/ansible/roles"
+inside_tests_path="${inside_roles_path}/${test_name}/tests"
 
 verbose_flag=0
 debug_flag=0
@@ -91,7 +91,7 @@ else
   
   [ $init == "systemd" ] && docker_flags="--privileged"
   docker_exec_flags="-i"
-  docker_volumes="-v $(cd ${role_path};pwd):${inside_role_path}"
+  docker_volumes="-v $(cd ${roles_path};pwd):${inside_roles_path}"
 
   [ -t 1 ] && docker_exec_flags="$docker_exec_flags -t"
   docker_flags="$docker_flags $([ -f ${docker_flags_file} ] && cat ${docker_flags_file} || true)"
