@@ -18,7 +18,7 @@ spawn ./run_tests.sh -d
 expect {
   timeout { send_user "Failed to get prompt\n"; exit 1 }
   eof { send_user "Failed to launch docker \n"; exit 1 }
-  -re ".root@.* /.# .*"
+  -re ".root@.* tests.# .*"
 }
 send "uname\n"
 expect {

@@ -110,9 +110,9 @@ else
 
   if [ $debug_flag -eq 1 ]
   then
-    docker exec ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; /bin/bash"
+    docker exec ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; cd ${inside_tests_path} ; /bin/bash"
   else
-    docker exec ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; ${run_test}"
+    docker exec ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; cd ${inside_tests_path} ; ${run_test}"
     result=$?
   fi
 fi
