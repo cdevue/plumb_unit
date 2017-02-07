@@ -72,7 +72,7 @@ shift $((OPTIND-1))
 [ $verbose_flag -eq 0 ] && output=">/dev/null 2>&1" || output="2>&1"
 
 if [ $# -gt 0 ] ; then
-  tests_list=$(echo $@ | tr ' ' '\n' | sed 's/^/-p /' | xargs echo)
+  tests_list=$(echo $@ | tr ' ' '\n' | sed 's/^/-p /' | xargs)
 fi
 
 bash_unit="${inside_tests_path}/bash_unit"
