@@ -43,6 +43,16 @@ test_mounts_common_roles_in_etc_ansible_roles() {
   assert "./run_tests.sh roles_in_etc_ansible_roles"
 }
 
+test_multiple_test_files() {
+  cat > test_plumb_unit_2 <<EOF
+#!/bin/bash
+${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
+EOF
+  assert "./run_tests.sh -p one_equal_to_one | wc -l > /tmp/expect.$$ 2>&1"
+  assert_equals "4" "$(cat /tmp/expect.$$)" "there is less than 2 tests played"
+  rm /tmp/expect.$$
+}
+
 setup() {
   test_prefix=test_ # workaround for bash_unit not to try to run this test on first pass
   cat > test_plumb_unit <<EOF
@@ -54,7 +64,7 @@ EOF
 }
 
 teardown() {
-  rm test_plumb_unit
+  rm test_plumb_unit*
   rm run_tests_*.sh 2>/dev/null
 }
 
