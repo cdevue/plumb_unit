@@ -77,7 +77,7 @@ if [ $# -gt 0 ] ; then
 fi
 
 bash_unit="${inside_tests_path}/bash_unit"
-files_with_tests=$(find . -type f | sed '/.*test_'${test_name}'.*'${distrib}'/!d;/~$/d' | sed "s:./:${inside_tests_path}/:g" | xargs)
+files_with_tests=$(find . | sed '/.*test_'${test_name}'.*'${distrib}'/!d;/~$/d' | sed "s:./:${inside_tests_path}/:g" | xargs)
 run_test="${bash_unit} ${tests_list} ${files_with_tests}"
 
 if [ -f /.dockerenv -a $(id -u) -eq 0 ]
