@@ -2,18 +2,23 @@
 
 usage() {
   [ $# -gt 0 ] && echo $@ >&2
-  echo "usage : $(basename $0) [-h] role_name
+  echo "usage : $(basename $0) [-h] [-c] role_name
   creates an ansible role with tests
-  -h = display this help" >&2
+  -h = display this help
+  -c = consider the role is exiting and is in the current directory" >&2
   exit 1
 }
 
 privileged=1
-while getopts h option
+current=0
+while getopts hc option
 do
   case $option in
     h)
       usage
+      ;;
+    c)
+      current=1
       ;;
   esac
 done
@@ -24,6 +29,7 @@ shift $(($OPTIND-1))
 tools=$(readlink -f $(dirname $0))
 base_dir=$(readlink -f .)
 role_dir=${base_dir}/roles/${role}
+[ $current -eq 1 ] && role_dir=${base_dir}
 mkdir -p ${role_dir}/{tasks,tests}
 
 run_test="run_tests.sh"
