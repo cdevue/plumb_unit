@@ -27,6 +27,9 @@ ENV LANG fr_FR.UTF-8
 RUN useradd -ms /bin/bash -c "Robert Paulson" rpaulson
 RUN echo "rpaulson ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/rpaulson
 
+#Disable /tmp cleanup which sopmetimes happen too slowly and erases things we just created
+RUN sed -r 's/^#*(TMPTIME=).*/\1-1/' /etc/default/rcS
+
 ENV TERM xterm
 
 CMD ["/sbin/init"]
