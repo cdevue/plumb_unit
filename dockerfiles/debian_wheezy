@@ -27,10 +27,6 @@ ENV LANG fr_FR.UTF-8
 RUN useradd -ms /bin/bash -c "Robert Paulson" rpaulson
 RUN echo "rpaulson ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/rpaulson
 
-#Wait for /tmp cleanup before starting
-ADD files/wheezy_tmp_is_clean /root/tmp_is_clean
-RUN chmod +x /root/tmp_is_clean
-
 ENV TERM xterm
 
-CMD /root/tmp_is_clean ; /sbin/init
+CMD ["/sbin/init"]

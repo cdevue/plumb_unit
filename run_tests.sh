@@ -110,6 +110,17 @@ else
     while ! docker exec $container systemctl status systemd-tmpfiles-clean.timer >/dev/null ; do sleep 1 ; done
   fi
 
+  if grep wheezy <(echo $distrib_name) >/dev/null
+  then
+    tst_file=$(docker exec $container mktemp)
+    max_wait=10
+    while [ ${max_wait} -gt 0 ] ; do
+      max_wait=$((max_wait-1))
+      [ $(docker exec $container ls ${tst_file} | wc -l ) -eq 0 ] && max_wait=0
+      sleep 1
+    done
+  fi
+
   if [ $debug_flag -eq 1 ]
   then
     docker exec ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; cd ${inside_tests_path} ; /bin/bash"
