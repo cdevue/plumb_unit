@@ -33,4 +33,4 @@ RUN chmod +x /root/tmp_is_clean
 
 ENV TERM xterm
 
-CMD ["/root/tmp_is_clean ; /sbin/init"]
+CMD /root/tmp_is_clean ; /sbin/init
