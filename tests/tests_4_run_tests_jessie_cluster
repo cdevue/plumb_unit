@@ -2,9 +2,9 @@
 
 test_two_containers_are_launched() {
   assert "./run_tests_jessie_cluster.sh -d" "run_tests.sh fails for cluster jessie"
-  assert "docker ps | grep plumb_unit01" "there is no plumb_unit01 container"
-  assert "docker ps | grep plumb_unit02" "there is no plumb_unit02 container"
-  assert "docker rm -f plumb_unit01 plumb_unit02" "error while destroying the containers"
+  assert "docker ps | grep plumbunit01" "there is no plumbunit01 container"
+  assert "docker ps | grep plumbunit02" "there is no plumbunit02 container"
+  assert "docker rm -f plumbunit01 plumbunit02" "error while destroying the containers"
 }
 
 setup() {

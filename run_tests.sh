@@ -87,8 +87,9 @@ bash_unit="${inside_tests_path}/bash_unit"
 files_with_tests=$(find . | sed '/.*test_'${test_name}'.*'${distrib}${cluster}'$/!d;/~$/d' | sed "s:./:${inside_tests_path}/:g" | xargs)
 run_test="${bash_unit} ${tests_list} ${files_with_tests}"
 
-containers=${test_name}
-[ ${cluster_mode} -eq 1 ] && containers="${test_name}01 ${test_name}02"
+container_base_name=$(echo ${test_name} | tr -d "_")
+containers=${container_base_name}
+[ ${cluster_mode} -eq 1 ] && containers="${container_base_name}01 ${container_base_name}02"
 
 if [ -f /.dockerenv -a $(id -u) -eq 0 ]
 then
