@@ -1,0 +1,24 @@
+#!/bin/bash
+
+test_two_containers_are_launched() {
+  assert "./run_tests_jessie_cluster.sh -d" "run_tests.sh fails for cluster jessie"
+  assert "docker ps | grep plumb_unit01" "there is no plumb_unit01 container"
+  assert "docker ps | grep plumb_unit02" "there is no plumb_unit02 container"
+  assert "docker rm -f plumb_unit01 plumb_unit02" "error while destroying the containers"
+}
+
+setup() {
+  test_prefix=test_ # workaround for bash_unit not to try to run this test on first pass
+  cat > test_plumb_unit_jessie_cluster <<EOF
+#!/bin/bash
+EOF
+  ln -s run_tests.sh run_tests_jessie_cluster.sh
+}
+
+teardown() {
+  rm test_plumb_unit_jessie_cluster
+  rm run_tests_*.sh 2>/dev/null
+}
+
+assert "expect -v" "expect needs to be installed to run this tests"
+
