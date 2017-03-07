@@ -1,35 +1,5 @@
 #!/bin/bash -e
 
-docker_image="multimediabs/plumb_unit:centos6"
-init=system5
-
-cd $(dirname $0)
-test_name=$(basename $(cd ..; pwd))
-distrib_name=$(basename $0 | sed -r 's/run_tests_*(.*).sh/\1/')
-if [ $distrib_name ] 
-then
-  distrib=_${distrib_name}
-  [ "${distrib_name}" == "jessie" ] && docker_image="multimediabs/plumb_unit:debian_jessie" && init=systemd
-  [ "${distrib_name}" == "wheezy" ] && docker_image="multimediabs/plumb_unit:debian_wheezy"
-  [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
-fi
-
-ESCAPE=$(printf "\033")
-NOCOLOR="${ESCAPE}[0m"
-RED="${ESCAPE}[91m"
-GREEN="${ESCAPE}[92m"
-YELLOW="${ESCAPE}[93m"
-BLUE="${ESCAPE}[94m"
-
-docker_flags_file=".docker_flags"
-
-roles_path="$(readlink -f ../..)"
-inside_roles_path="/etc/ansible/roles"
-inside_tests_path="${inside_roles_path}/${test_name}/tests"
-
-verbose_flag=0
-debug_flag=0
-
 usage() {
   echo "$*
 usage: $(basename $0) [-d] [-v] [-h] [test1 test2 ...]
@@ -53,6 +23,57 @@ format() {
   fi
   if [ -t 1 ] ; then echo -en "$NOCOLOR" ; fi
 }
+
+docker_image="multimediabs/plumb_unit:centos6"
+init=system5
+cluster_mode=0
+
+cd $(dirname $0)
+test_name=$(basename $(cd ..; pwd))
+distrib_name=$(basename $0 | sed -r 's/run_tests_*(.*)(_cluster)?.sh/\1/')
+grep _cluster <(echo $distrib_name) >/dev/null && cluster_mode=1
+distrib_name=$(echo $distrib_name | sed -r 's/_cluster//')
+if [ $distrib_name ] 
+then
+  distrib=_${distrib_name}
+  [ "${distrib_name}" == "jessie" ] && docker_image="multimediabs/plumb_unit:debian_jessie" && init=systemd
+  [ "${distrib_name}" == "wheezy" ] && docker_image="multimediabs/plumb_unit:debian_wheezy"
+  [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
+else
+  usage "$(basename $0) can not be run without specifying a distribution / version.
+  specification is done by creating a link and running $(basename $0) using this link.
+  for instance, running tests for centos 6 is done this way :
+    $ ln -s $(basename $0) $(basename $0 .sh)_centos6.sh
+    $ ./$(basename $0 .sh)_centos6.sh
+  currently available distributions / versions are :
+    centos6 = centos 6
+    jessie = debian 8
+    wheezy = debian 7
+  to run tests in cluster mode, add _cluster after the distribution specification. ex :
+    $ ln -s $(basename $0) $(basename $0 .sh)_jessie_cluster.sh
+"
+fi
+
+echo $distrib_name
+echo $cluster_mode
+
+exit
+
+ESCAPE=$(printf "\033")
+NOCOLOR="${ESCAPE}[0m"
+RED="${ESCAPE}[91m"
+GREEN="${ESCAPE}[92m"
+YELLOW="${ESCAPE}[93m"
+BLUE="${ESCAPE}[94m"
+
+docker_flags_file=".docker_flags"
+
+roles_path="$(readlink -f ../..)"
+inside_roles_path="/etc/ansible/roles"
+inside_tests_path="${inside_roles_path}/${test_name}/tests"
+
+verbose_flag=0
+debug_flag=0
 
 while getopts vhdp name
 do
