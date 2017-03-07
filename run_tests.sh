@@ -33,7 +33,7 @@ test_name=$(basename $(cd ..; pwd))
 distrib_name=$(basename $0 | sed -r 's/run_tests_*([^_]*)(_cluster)?.sh/\1/')
 grep _cluster <(basename $0) >/dev/null && cluster_mode=1
 [ ${cluster_mode} -eq 1 ] && cluster=_cluster
-if [ $distrib_name ] 
+if [ $distrib_name ]
 then
   distrib=_${distrib_name}
   [ "${distrib_name}" == "jessie" ] && docker_image="multimediabs/plumb_unit:debian_jessie" && init=systemd
@@ -100,7 +100,7 @@ else
     eval docker build -t ${test_name} ${docker_build_flags} . ${output} || exit 42
     format ${GREEN} "DONE"
   fi
-  
+
   [ $init == "systemd" ] && docker_flags="--privileged"
   docker_exec_flags="-i"
   docker_volumes="-v $(cd ${roles_path};pwd):${inside_roles_path}"
@@ -113,7 +113,7 @@ else
   do
     # sad, but if I don't do this and run two times it tries to build while removal in progress.
     docker ps -a | grep ${container} >/dev/null 2>&1 &&  sleep 1
- 
+
     docker ps -a | grep ${container} >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
     eval echo "Running docker with flags [${docker_flags}]" ${output}
     container_id=$(docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image})
