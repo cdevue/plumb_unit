@@ -40,24 +40,8 @@ then
   [ "${distrib_name}" == "wheezy" ] && docker_image="multimediabs/plumb_unit:debian_wheezy"
   [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
 else
-  usage "$(basename $0) can not be run without specifying a distribution / version.
-  specification is done by creating a link and running $(basename $0) using this link.
-  for instance, running tests for centos 6 is done this way :
-    $ ln -s $(basename $0) $(basename $0 .sh)_centos6.sh
-    $ ./$(basename $0 .sh)_centos6.sh
-  currently available distributions / versions are :
-    centos6 = centos 6
-    jessie = debian 8
-    wheezy = debian 7
-  to run tests in cluster mode, add _cluster after the distribution specification. ex :
-    $ ln -s $(basename $0) $(basename $0 .sh)_jessie_cluster.sh
-"
+  echo "No distribution specified. Running tests for $(echo ${docker_image} | sed 's/^.*://')"
 fi
-
-echo $distrib_name
-echo $cluster_mode
-
-exit
 
 ESCAPE=$(printf "\033")
 NOCOLOR="${ESCAPE}[0m"
@@ -101,6 +85,9 @@ bash_unit="${inside_tests_path}/bash_unit"
 files_with_tests=$(find . | sed '/.*test_'${test_name}'.*'${distrib}'/!d;/~$/d' | sed "s:./:${inside_tests_path}/:g" | xargs)
 run_test="${bash_unit} ${tests_list} ${files_with_tests}"
 
+containers=${test_name}
+[ ${cluster_mode} -eq 1 ] && containers="${test_name}01 ${test_name}02"
+
 if [ -f /.dockerenv -a $(id -u) -eq 0 ]
 then
   ${run_test}
@@ -119,28 +106,40 @@ else
   [ -t 1 ] && docker_exec_flags="$docker_exec_flags -t"
   docker_flags="$docker_flags $([ -f ${docker_flags_file} ] && cat ${docker_flags_file} || true)"
 
-  eval echo "Running docker with flags [${docker_flags}]" ${output}
-  container=$(docker run -d ${docker_flags} ${docker_volumes} ${docker_image})
-  trap "docker rm --force $container >/dev/null" EXIT
+  for container in ${containers}
+  do
+    eval echo "Running docker with flags [${docker_flags}]" ${output}
+    container_id=$(docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image})
+    trap "docker rm --force ${containers} >/dev/null" EXIT
 
-  if grep jessie <(echo $distrib_name) >/dev/null
-  then
-    #wait for systemd to be ready
-    while ! docker exec $container systemctl status >/dev/null ; do sleep 1 ; done
-    #wait for tmpfiles cleaner to be started so that it does not clean /tmp while tests are running
-    while ! docker exec $container systemctl status systemd-tmpfiles-clean.timer >/dev/null ; do sleep 1 ; done
-  fi
+    if grep jessie <(echo $distrib_name) >/dev/null
+    then
+      #wait for systemd to be ready
+      while ! docker exec $container systemctl status >/dev/null ; do sleep 1 ; done
+      #wait for tmpfiles cleaner to be started so that it does not clean /tmp while tests are running
+      while ! docker exec $container systemctl status systemd-tmpfiles-clean.timer >/dev/null ; do sleep 1 ; done
+    fi
 
-  if grep wheezy <(echo $distrib_name) >/dev/null
-  then
-    tst_file=$(docker exec $container mktemp)
-    max_wait=10
-    while [ ${max_wait} -gt 0 ] ; do
-      max_wait=$((max_wait-1))
-      [ $(docker exec $container ls ${tst_file} >/dev/null 2>&1 | wc -l ) -eq 0 ] && max_wait=0
-      sleep 1
+    if grep wheezy <(echo $distrib_name) >/dev/null
+    then
+      tst_file=$(docker exec $container mktemp)
+      max_wait=10
+      while [ ${max_wait} -gt 0 ] ; do
+        max_wait=$((max_wait-1))
+        [ $(docker exec $container ls ${tst_file} >/dev/null 2>&1 | wc -l ) -eq 0 ] && max_wait=0
+        sleep 1
+      done
+    fi
+  done
+
+  for container in ${containers}
+  do
+    hosts_information=$(echo $(docker inspect -f '{{.NetworkSettings.IPAddress}}' ${container}) ${container})
+    for container_dest in ${containers}
+    do
+      docker exec ${container_dest} /bin/bash -c "echo ${hosts_information} >> /etc/hosts"
     done
-  fi
+  done
 
   if [ $debug_flag -eq 1 ]
   then
