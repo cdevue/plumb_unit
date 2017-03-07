@@ -155,6 +155,8 @@ else
     docker exec ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; cd ${inside_tests_path} ; ${run_test}"
     result=$?
   else
+    mkdir -p roles
+    [ -L roles/${test_name} ] || ln -s ../.. roles/${test_name}
     if [ $debug_flag -eq 1 ]
     then
       echo "you're in debug mode"
