@@ -6,6 +6,7 @@ test_do_not_run_cluster_tests_when_not_in_cluster_mode() {
 ${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
 EOF
   assert_fail "./run_tests.sh -p one_equal_to_one | grep cluster" "cluster tests are being run"
+  rm test_plumb_unit_centos6_cluster
 }
 
 test_ok_test_is_ok() {
