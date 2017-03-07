@@ -30,9 +30,9 @@ cluster_mode=0
 
 cd $(dirname $0)
 test_name=$(basename $(cd ..; pwd))
-distrib_name=$(basename $0 | sed -r 's/run_tests_*(.*)(_cluster)?.sh/\1/')
-grep _cluster <(echo $distrib_name) >/dev/null && cluster_mode=1
-distrib_name=$(echo $distrib_name | sed -r 's/_cluster//')
+distrib_name=$(basename $0 | sed -r 's/run_tests_*([^_]*)(_cluster)?.sh/\1/')
+grep _cluster <(basename $0) >/dev/null && cluster_mode=1
+[ ${cluster_mode} -eq 1 ] && cluster=_cluster
 if [ $distrib_name ] 
 then
   distrib=_${distrib_name}
@@ -41,6 +41,7 @@ then
   [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
 else
   echo "No distribution specified. Running tests for $(echo ${docker_image} | sed 's/^.*://')"
+  distrib=_centos6 # we do not want $distrib_name to be set here
 fi
 
 ESCAPE=$(printf "\033")
@@ -54,6 +55,7 @@ docker_flags_file=".docker_flags"
 
 roles_path="$(readlink -f ../..)"
 inside_roles_path="/etc/ansible/roles"
+[ ${cluster_mode} -eq 1 ] && inside_roles_path=${roles_path}
 inside_tests_path="${inside_roles_path}/${test_name}/tests"
 
 verbose_flag=0
@@ -82,7 +84,7 @@ if [ $# -gt 0 ] ; then
 fi
 
 bash_unit="${inside_tests_path}/bash_unit"
-files_with_tests=$(find . | sed '/.*test_'${test_name}'.*'${distrib}'/!d;/~$/d' | sed "s:./:${inside_tests_path}/:g" | xargs)
+files_with_tests=$(find . | sed '/.*test_'${test_name}'.*'${distrib}${cluster}'$/!d;/~$/d' | sed "s:./:${inside_tests_path}/:g" | xargs)
 run_test="${bash_unit} ${tests_list} ${files_with_tests}"
 
 containers=${test_name}
@@ -102,15 +104,19 @@ else
   [ $init == "systemd" ] && docker_flags="--privileged"
   docker_exec_flags="-i"
   docker_volumes="-v $(cd ${roles_path};pwd):${inside_roles_path}"
+  [ ${cluster_mode} -eq 1 ] && docker_volumes=
 
   [ -t 1 ] && docker_exec_flags="$docker_exec_flags -t"
   docker_flags="$docker_flags $([ -f ${docker_flags_file} ] && cat ${docker_flags_file} || true)"
 
   for container in ${containers}
   do
+    # sad, but if I don't do this and run two times it tries to build while removal in progress.
+    docker ps -a | grep ${container} >/dev/null 2>&1 &&  sleep 1
+ 
+    docker ps -a | grep ${container} >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
     eval echo "Running docker with flags [${docker_flags}]" ${output}
     container_id=$(docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image})
-    trap "docker rm --force ${containers} >/dev/null" EXIT
 
     if grep jessie <(echo $distrib_name) >/dev/null
     then
@@ -141,11 +147,22 @@ else
     done
   done
 
-  if [ $debug_flag -eq 1 ]
+  trap "docker rm --force ${containers} >/dev/null" EXIT
+  if [ ${cluster_mode} -eq 0 ]
   then
-    docker exec ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; cd ${inside_tests_path} ; /bin/bash"
-  else
+    [ $debug_flag -eq 1 ] && run_test=/bin/bash
     docker exec ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; cd ${inside_tests_path} ; ${run_test}"
+    result=$?
+  else
+    if [ $debug_flag -eq 1 ]
+    then
+      echo "you're in debug mode"
+      echo "once debug done, remove the containers by running the following command :"
+      echo "docker rm -f ${containers}"
+      trap - EXIT
+      run_test="echo -n"
+    fi
+    ${run_test}
     result=$?
   fi
 fi

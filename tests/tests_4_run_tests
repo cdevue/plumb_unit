@@ -1,5 +1,13 @@
 #!/bin/bash
 
+test_do_not_run_cluster_tests_when_not_in_cluster_mode() {
+  cat > test_plumb_unit_centos6_cluster <<EOF
+#!/bin/bash
+${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
+EOF
+  assert_fail "./run_tests.sh -p one_equal_to_one | grep cluster" "cluster tests are being run"
+}
+
 test_ok_test_is_ok() {
   assert "./run_tests.sh -p one_equal_to_one test_plumb_unit"
 }
@@ -44,22 +52,22 @@ test_mounts_common_roles_in_etc_ansible_roles() {
 }
 
 test_multiple_test_files() {
-  cat > test_plumb_unit_2 <<EOF
+  cat > test_plumb_unit_2_centos6 <<EOF
 #!/bin/bash
 ${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
 EOF
   assert "./run_tests.sh -p one_equal_to_one | wc -l > /tmp/expect.$$ 2>&1"
   # Following expects 5 lines in the output :
   # 1 warning message for not specifying distribution
-  # 1 telling which test file is played
-  # 3 for the 3 tests in the test file
+  # 2 telling which test file is played
+  # 2 for the one test in each test file
   assert_equals "5" "$(cat /tmp/expect.$$)" "there is less than 2 tests played"
-  rm /tmp/expect.$$
+  rm /tmp/expect.$$ test_plumb_unit_2_centos6
 }
 
 setup() {
   test_prefix=test_ # workaround for bash_unit not to try to run this test on first pass
-  cat > test_plumb_unit <<EOF
+  cat > test_plumb_unit_centos6 <<EOF
 #!/bin/bash
 ${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
 ${test_prefix}is_one_equal_to_two() { assert_equals 1 2 "oups"; }
@@ -68,7 +76,7 @@ EOF
 }
 
 teardown() {
-  rm test_plumb_unit*
+  rm test_plumb_unit*_centos6
   rm run_tests_*.sh 2>/dev/null
 }
 
