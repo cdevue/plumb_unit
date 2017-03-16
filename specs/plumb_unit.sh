@@ -52,3 +52,12 @@ run_on() {
   shift
   local command="$*"
 }
+
+run_ansible() {
+  #Run ansible on all the created instances.
+  #The inventory used collects all the created instances in one
+  #single group.
+  #The playbook used applies the current role to all the servers
+  #of the inventory
+  #The groups_vars you defined are used during the run or none
+}
