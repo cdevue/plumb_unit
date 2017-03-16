@@ -11,6 +11,48 @@ usage: $(basename $0) [-d] [-v] [-h] [test1 test2 ...]
   exit
 }
 
+start_container() {
+  local container="$1"
+  # sad, but if I don't do this and run two times it tries to build while removal in progress.
+  docker ps -a | grep ${container} >/dev/null 2>&1 &&  sleep 1
+  
+  docker ps -a | grep ${container} >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
+  eval echo "Running docker with flags [${docker_flags}]" ${output}
+  container_id=$(docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image})
+  
+  if grep jessie <(echo $distrib_name) >/dev/null
+  then
+    #wait for systemd to be ready
+    while ! docker exec $container systemctl status >/dev/null ; do sleep 1 ; done
+    #wait for tmpfiles cleaner to be started so that it does not clean /tmp while tests are running
+    while ! docker exec $container systemctl status systemd-tmpfiles-clean.timer >/dev/null ; do sleep 1 ; done
+  fi
+  
+  if grep wheezy <(echo $distrib_name) >/dev/null
+  then
+    tst_file=$(docker exec $container mktemp)
+    max_wait=10
+    while [ ${max_wait} -gt 0 ] ; do
+      max_wait=$((max_wait-1))
+      [ $(docker exec $container ls ${tst_file} >/dev/null 2>&1 | wc -l ) -eq 0 ] && max_wait=0
+      sleep 1
+    done
+  fi
+}
+
+present_containers_to_eachother() {
+local containers="$@"
+for container in ${containers}
+  do
+    hosts_information=$(echo $(docker inspect -f '{{.NetworkSettings.IPAddress}}' ${container}) ${container})
+    for container_dest in ${containers}
+    do
+      docker exec ${container_dest} /bin/bash -c "echo ${hosts_information} >> /etc/hosts"
+    done
+  done
+}
+
+
 format() {
   local color=$1
   shift
@@ -112,41 +154,10 @@ else
 
   for container in ${containers}
   do
-    # sad, but if I don't do this and run two times it tries to build while removal in progress.
-    docker ps -a | grep ${container} >/dev/null 2>&1 &&  sleep 1
-
-    docker ps -a | grep ${container} >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
-    eval echo "Running docker with flags [${docker_flags}]" ${output}
-    container_id=$(docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image})
-
-    if grep jessie <(echo $distrib_name) >/dev/null
-    then
-      #wait for systemd to be ready
-      while ! docker exec $container systemctl status >/dev/null ; do sleep 1 ; done
-      #wait for tmpfiles cleaner to be started so that it does not clean /tmp while tests are running
-      while ! docker exec $container systemctl status systemd-tmpfiles-clean.timer >/dev/null ; do sleep 1 ; done
-    fi
-
-    if grep wheezy <(echo $distrib_name) >/dev/null
-    then
-      tst_file=$(docker exec $container mktemp)
-      max_wait=10
-      while [ ${max_wait} -gt 0 ] ; do
-        max_wait=$((max_wait-1))
-        [ $(docker exec $container ls ${tst_file} >/dev/null 2>&1 | wc -l ) -eq 0 ] && max_wait=0
-        sleep 1
-      done
-    fi
+    start_container ${container}
   done
 
-  for container in ${containers}
-  do
-    hosts_information=$(echo $(docker inspect -f '{{.NetworkSettings.IPAddress}}' ${container}) ${container})
-    for container_dest in ${containers}
-    do
-      docker exec ${container_dest} /bin/bash -c "echo ${hosts_information} >> /etc/hosts"
-    done
-  done
+  present_containers_to_eachother ${containers}
 
   trap "docker rm --force ${containers} >/dev/null" EXIT
   if [ ${cluster_mode} -eq 0 ]
