@@ -1,17 +1,21 @@
-test_install_packages() {
-  assert "run_on sample dpkg -l sample | grep '^ii'"
+test_install_apache() {
+  assert "run_on web_server dpkg -l apache | grep '^ii'"
 }
 
 setup() {
-  start_instance sample
+  start_instance web_server
 
   mkdir /tmp/ansible/group_vars -p
 
   cat << EOF > /tmp/ansible/playbook.yml
 - hosts: all
   roles:
-    - role: sample
+    - role: apache
 EOF
+}
+
+teardown() {
+  destroy()
 }
 
 run_ansible() {
