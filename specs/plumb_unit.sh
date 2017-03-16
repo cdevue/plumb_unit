@@ -21,6 +21,21 @@ destroy() {
   #created by the current program (what is a program ?).
 }
 
+set_group_vars() {
+  #Creates or override an ansible group_vars file configuration.
+  #The name of the group_vars file is the one given as parameter.
+  #The content of the group_vars file must be sent to stdin.
+  #
+  # set_group_vars sql <<EOF
+  # databases:
+  #   db1:
+  #     user: db1-rw
+  #   db2:
+  #     user: toto
+  # EOF
+  local vars=$1
+}
+
 run_on() {
   #Runs the given command on the given instance.
   #The instance of the computer under test to run the command

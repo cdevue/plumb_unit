@@ -4,13 +4,8 @@ test_install_apache() {
 
 setup() {
   start_instance web_server
-
-  mkdir /tmp/ansible/group_vars -p
-
-  cat << EOF > /tmp/ansible/playbook.yml
-- hosts: all
-  roles:
-    - role: apache
+  set_group_vars all <<EOF
+apache_rpaf_ips: [192.168.109.1, 192.168.109.2]
 EOF
 }
 
