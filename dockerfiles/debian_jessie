@@ -49,6 +49,8 @@ RUN echo "rpaulson ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/rpaulson
 ENV TERM xterm
 
 # enable docker in docker
+RUN apt-get install -y wget
+
 RUN set -x &&\
     addgroup --system dockremap &&\
     adduser --system --group dockremap &&\
