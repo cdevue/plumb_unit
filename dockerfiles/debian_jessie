@@ -48,4 +48,19 @@ RUN echo "rpaulson ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/rpaulson
 
 ENV TERM xterm
 
+# enable docker in docker
+RUN set -x &&\
+    addgroup --system dockremap &&\
+    adduser --system --group dockremap &&\
+    echo 'dockremap:165536:65536' >> /etc/subuid &&\
+    echo 'dockremap:165536:65536' >> /etc/subgid
+
+ENV DIND_COMMIT 3b5fac462d21ca164b3778647420016315289034
+
+RUN wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
+    && chmod +x /usr/local/bin/dind
+
+VOLUME /var/lib/docker
+EXPOSE 2375
+
 CMD ["/sbin/init"]
