@@ -16,7 +16,7 @@ start_container() {
   # sad, but if I don't do this and run two times it tries to build while removal in progress.
   docker ps -a | grep ${container} >/dev/null 2>&1 &&  sleep 1
   
-  docker ps -a | grep ${container} >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
+  docker ps -a --format="{{.Names}}" | grep '^'${container}'$' >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
   eval echo "Running docker with flags [${docker_flags}]" ${output}
   container_id=$(docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image})
   
