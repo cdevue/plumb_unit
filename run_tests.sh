@@ -142,6 +142,7 @@ else
     format ${BLUE} -n "Building ${test_name} ${docker_build_flags} container..."
     eval docker build -t ${test_name} ${docker_build_flags} . ${output} || exit 42
     format ${GREEN} "DONE"
+    docker_image=${test_name}
   fi
 
   [ $init == "systemd" ] && docker_flags="--privileged"
