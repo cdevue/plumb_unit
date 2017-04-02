@@ -40,19 +40,6 @@ start_container() {
   fi
 }
 
-present_containers_to_eachother() {
-local containers="$@"
-for container in ${containers}
-  do
-    hosts_information=$(echo $(docker inspect -f '{{.NetworkSettings.IPAddress}}' ${container}) ${container})
-    for container_dest in ${containers}
-    do
-      docker exec ${container_dest} /bin/bash -c "echo ${hosts_information} >> /etc/hosts"
-    done
-  done
-}
-
-
 format() {
   local color=$1
   shift
@@ -149,16 +136,20 @@ else
   docker_exec_flags="-i"
   docker_volumes="-v $(cd ${roles_path};pwd):${inside_roles_path}"
   [ ${cluster_mode} -eq 1 ] && docker_volumes=
+  docker_network_flags=""
+  if [ ${cluster_mode} -eq 1 ]
+  then
+    docker_network_flags="--network ${test_name}"
+    docker network ls --format={{.Name}} |grep '^'${test_name}'$' || docker network create ${test_name}
+  fi
 
   [ -t 1 ] && docker_exec_flags="$docker_exec_flags -t"
-  docker_flags="$docker_flags $([ -f ${docker_flags_file} ] && cat ${docker_flags_file} || true)"
+  docker_flags="$docker_flags $docker_network_flags $([ -f ${docker_flags_file} ] && cat ${docker_flags_file} || true)"
 
   for container in ${containers}
   do
     start_container ${container}
   done
-
-  present_containers_to_eachother ${containers}
 
   trap "docker rm --force ${containers} >/dev/null" EXIT
   if [ ${cluster_mode} -eq 0 ]
