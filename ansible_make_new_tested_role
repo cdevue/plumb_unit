@@ -1,5 +1,7 @@
 #!/bin/bash
 
+default_distrib=centos6
+
 usage() {
   [ $# -gt 0 ] && echo $@ >&2
   echo "usage : $(basename $0) [-h] [-c] role_name
@@ -52,9 +54,9 @@ cd ${role_dir}/tests
 [ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
 
 
-if [ ! -f "test_${role}" ]
+if [ ! -f "test_${role}_${default_distrib}" ]
 then
-  cat << __EOF__ >test_${role}
+  cat << __EOF__ >test_${role}_${default_distrib}
 #!/bin/bash
 
 test_failed() {
