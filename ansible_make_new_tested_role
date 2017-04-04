@@ -26,7 +26,8 @@ shift $(($OPTIND-1))
 
 [ $# -gt 0 ] && role=$1 || usage "le nom du rôle doit être passé en paramètre."
 
-tools=$(readlink -f $(dirname $0))
+this_script=$(readlink -f $0)
+tools=$(readlink -f $(dirname ${this_script}))
 base_dir=$(readlink -f .)
 role_dir=${base_dir}/roles/${role}
 [ $current -eq 1 ] && role_dir=${base_dir}
