@@ -39,7 +39,7 @@ ansible_cfg="ansible.cfg"
 
 cd ${role_dir}/tasks
 
-[ -f main.yml ] || touch main.yml
+[ -f main.yml ] || cp ${tools}/tasks/*.yml .
 
 cd ${role_dir}/tests
 
