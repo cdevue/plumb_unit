@@ -1,10 +1,14 @@
 #!/bin/bash -e
 
+managed_distribs="jessie wheezy centos6"
+
 usage() {
   echo "$*
 usage: $(basename $0) [-d] [-v] [-h] [test1 test2 ...]
+   or: $(basename $0) -q
         -d : activates debug mode
         -v : gets verbose (mainly outputs docker outputs)
+        -q : query the list of managed distributions
         -h : this help
         If tests names are passed as arguments, only those will run. Default is to run all tests.
 "
@@ -69,7 +73,7 @@ then
   [ "${distrib_name}" == "wheezy" ] && docker_image="multimediabs/plumb_unit:debian_wheezy"
   [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
 else
-  echo "No distribution specified. Running tests for $(echo ${docker_image} | sed 's/^.*://')"
+  #echo "No distribution specified. Running tests for $(echo ${docker_image} | sed 's/^.*://')"
   distrib=_centos6 # we do not want $distrib_name to be set here
 fi
 
@@ -90,7 +94,7 @@ inside_tests_path="${inside_roles_path}/${test_name}/tests"
 verbose_flag=0
 debug_flag=0
 
-while getopts vhdp name
+while getopts vhdq name
 do
   case $name in
     v)
@@ -98,6 +102,10 @@ do
       ;;
     d)
       debug_flag=1
+      ;;
+    q)
+      echo ${managed_distribs}
+      exit
       ;;
     h)
       usage
