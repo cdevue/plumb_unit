@@ -83,6 +83,8 @@ EOF
 teardown() {
   rm test_plumb_unit*_centos6
   rm run_tests_*.sh 2>/dev/null
+  [ -L roles/plumb_unit ] && rm roles/plumb_unit
+  [ -d roles ] && rmdir roles/
 }
 
 assert "expect -v" "expect needs to be installed to run this tests"
