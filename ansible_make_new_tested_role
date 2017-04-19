@@ -2,16 +2,29 @@
 
 usage() {
   [ $# -gt 0 ] && echo $@ >&2
-  echo "usage : $(basename $0) [-h] [-c] role_name
+  echo "usage : $(basename $0) [-h] [-c] [-D DISTRIBS [-C]] role_name
   creates an ansible role with tests
   -h = display this help
+  -D = specify a list of suported distributions for your role.
+       DISTRIBS is a list of distributions separated by ':'
+       supported_distribs are : $(${tools}/${run_test} -q)
+  -C = your roles supports cluster mode
   -c = consider the role is exiting and is in the current directory" >&2
   exit 1
 }
 
+this_script=$(readlink -f $0)
+tools=$(readlink -f $(dirname ${this_script}))
+base_dir=$(readlink -f .)
+run_test="run_tests.sh"
+bash_unit="bash_unit"
+ansible_cfg="ansible.cfg"
+
 privileged=1
 current=0
-while getopts hc option
+cluster=0
+distribs=
+while getopts hcCD: option
 do
   case $option in
     h)
@@ -20,22 +33,30 @@ do
     c)
       current=1
       ;;
+    C)
+      cluster=1
+      ;;
+    D)
+      distribs="$OPTARG"
+      ;;
   esac
 done
 shift $(($OPTIND-1))
 
 [ $# -gt 0 ] && role=$1 || usage "le nom du rôle doit être passé en paramètre."
-
-this_script=$(readlink -f $0)
-tools=$(readlink -f $(dirname ${this_script}))
-base_dir=$(readlink -f .)
 role_dir=${base_dir}/roles/${role}
 [ $current -eq 1 ] && role_dir=${base_dir}
-mkdir -p ${role_dir}/{tasks,tests}
 
-run_test="run_tests.sh"
-bash_unit="bash_unit"
-ansible_cfg="ansible.cfg"
+if [ -n "${distribs}" ] ; then
+  for distrib_name in $(echo ${distribs} | tr ":" " ")
+  do
+    if [ $(grep "^${distrib_name}$" <(${tools}/${run_test} -q | tr ' ' '\n') | wc -l ) -ne 1 ] ; then
+      usage "${distrib_name} is not a supported distribution"
+    fi
+  done
+fi
+
+mkdir -p ${role_dir}/{tasks,tests}
 
 cd ${role_dir}/tasks
 
@@ -50,7 +71,6 @@ cd ${role_dir}/tests
 [ -x ${bash_unit} ] || chmod +x ${run_test}
 
 [ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
-
 
 if [ ! -f "test_${role}" ]
 then
@@ -77,6 +97,17 @@ run_ansible() {
 }
 
 __EOF__
+fi
+
+if [ -n "${distribs}" ] ; then
+  for distrib_name in $(echo ${distribs} | tr ":" " ")
+  do
+    ln -s ${run_test} $(basename ${run_test} .sh)_${distrib_name}.sh
+    [ ${cluster} -eq 1 ] && ln -s ${run_test} $(basename ${run_test} .sh)_${distrib_name}_cluster.sh
+    cp test_${role} test_${role}_${distrib_name}
+    [ ${cluster} -eq 1 ] && cp test_${role} test_${role}_${distrib_name}_cluster
+  done
+  rm test_${role}
 fi
 
 echo "role [${role}] created" >&2
