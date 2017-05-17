@@ -1,5 +1,10 @@
 #!/bin/bash
 
+test_q_option_lists_supported_distributions() {
+  distributions=$(./run_tests.sh -q)
+  assert_equals "jessie wheezy centos6" "${distributions}" "distribution list does not match"
+}
+
 test_do_not_run_cluster_tests_when_not_in_cluster_mode() {
   cat > test_plumb_unit_centos6_cluster <<EOF
 #!/bin/bash
@@ -58,11 +63,10 @@ test_multiple_test_files() {
 ${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
 EOF
   assert "./run_tests.sh -p one_equal_to_one | wc -l > /tmp/expect.$$ 2>&1"
-  # Following expects 5 lines in the output :
-  # 1 warning message for not specifying distribution
+  # Following expects 4 lines in the output :
   # 2 telling which test file is played
   # 2 for the one test in each test file
-  assert_equals "5" "$(cat /tmp/expect.$$)" "there is less than 2 tests played"
+  assert_equals "4" "$(cat /tmp/expect.$$)" "there is less than 2 tests played"
   rm /tmp/expect.$$ test_plumb_unit_2_centos6
 }
 
@@ -79,6 +83,8 @@ EOF
 teardown() {
   rm test_plumb_unit*_centos6
   rm run_tests_*.sh 2>/dev/null
+  [ -L roles/plumb_unit ] && rm roles/plumb_unit
+  [ -d roles ] && rmdir roles/
 }
 
 assert "expect -v" "expect needs to be installed to run this tests"

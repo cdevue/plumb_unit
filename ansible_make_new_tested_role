@@ -4,16 +4,29 @@ default_distrib=centos6
 
 usage() {
   [ $# -gt 0 ] && echo $@ >&2
-  echo "usage : $(basename $0) [-h] [-c] role_name
+  echo "usage : $(basename $0) -D DISTRIBS [-h] [-c] [-C] role_name
   creates an ansible role with tests
   -h = display this help
+  -D = specify a list of suported distributions for your role.
+       DISTRIBS is a list of distributions separated by ':'
+       supported_distribs are : $(${tools}/${run_test} -q)
+  -C = your roles supports cluster mode
   -c = consider the role is exiting and is in the current directory" >&2
   exit 1
 }
 
+this_script=$(readlink -f $0)
+tools=$(readlink -f $(dirname ${this_script}))
+base_dir=$(readlink -f .)
+run_test="run_tests.sh"
+bash_unit="bash_unit"
+ansible_cfg="ansible.cfg"
+
 privileged=1
 current=0
-while getopts hc option
+cluster=0
+distribs=
+while getopts hcCD: option
 do
   case $option in
     h)
@@ -22,34 +35,48 @@ do
     c)
       current=1
       ;;
+    C)
+      cluster=1
+      ;;
+    D)
+      distribs="$OPTARG"
+      ;;
   esac
 done
 shift $(($OPTIND-1))
 
-[ $# -gt 0 ] && role=$1 || usage "le nom du rôle doit être passé en paramètre."
+[ -z "${distribs}" ] && usage "-D is a mandatory option"
 
-this_script=$(readlink -f $0)
-tools=$(readlink -f $(dirname ${this_script}))
-base_dir=$(readlink -f .)
+[ $# -gt 0 ] && role=$1 || usage "le nom du rôle doit être passé en paramètre."
 role_dir=${base_dir}/roles/${role}
 [ $current -eq 1 ] && role_dir=${base_dir}
-mkdir -p ${role_dir}/{tasks,tests}
 
-run_test="run_tests.sh"
-bash_unit="bash_unit"
-ansible_cfg="ansible.cfg"
+if [ -n "${distribs}" ] ; then
+  for distrib_name in $(echo ${distribs} | tr ":" " ")
+  do
+    if [ $(grep "^${distrib_name}$" <(${tools}/${run_test} -q | tr ' ' '\n') | wc -l ) -ne 1 ] ; then
+      usage "${distrib_name} is not a supported distribution"
+    fi
+  done
+fi
+
+mkdir -p ${role_dir}/{tasks,tests,meta}
 
 cd ${role_dir}/tasks
 
-[ -f main.yml ] || touch main.yml
+[ -f main.yml ] || cp ${tools}/tasks/*.yml .
+
+cd ${role_dir}/meta
+
+[ -f main.yml ] || echo "dependencies: []" > main.yml
 
 cd ${role_dir}/tests
 
-[ -f ${run_test} ] || cp ${tools}/${run_test} .
-[ -x ${run_test} ] || chmod +x ${run_test}
+[ -f ${run_test} ] || cp ${tools}/${run_test} .${run_test}
+[ -x ${run_test} ] || chmod +x .${run_test}
 
 [ -f ${bash_unit} ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
-[ -x ${bash_unit} ] || chmod +x ${run_test}
+[ -x ${bash_unit} ] || chmod +x ${bash_unit}
 
 [ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
 
@@ -81,9 +108,26 @@ run_ansible() {
 __EOF__
 fi
 
+if [ -n "${distribs}" ] ; then
+  for distrib_name in $(echo ${distribs} | tr ":" " ")
+  do
+    ln -s .${run_test} $(basename ${run_test} .sh)_${distrib_name}.sh
+    [ ${cluster} -eq 1 ] && ln -s .${run_test} $(basename ${run_test} .sh)_${distrib_name}_cluster.sh
+    cp test_${role} test_${role}_${distrib_name}
+    [ ${cluster} -eq 1 ] && cp test_${role} test_${role}_${distrib_name}_cluster
+  done
+  rm test_${role}
+fi
+
 echo "role [${role}] created" >&2
 echo "to run tests :" >&2
 echo "  cd ${role_dir}/tests" >&2
-echo "  ./run_tests.sh" >&2
+echo -n "  and run one of :" >&2
+for distrib_name in $(echo ${distribs} | tr ":" " ")
+do
+  echo " ./$(basename ${run_test} .sh)_${distrib_name}.sh" >&2
+  [ ${cluster} -eq 1 ] && echo -n " ./$(basename ${run_test} .sh)_${distrib_name}_cluster.sh" >&2
+done
+echo >&2
 
 cd ${base_dir}
