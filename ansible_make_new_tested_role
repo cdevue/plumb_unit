@@ -10,8 +10,7 @@ usage() {
   -D = specify a list of suported distributions for your role.
        DISTRIBS is a list of distributions separated by ':'
        supported_distribs are : $(${tools}/${run_test} -q)
-  -C = your roles supports cluster mode
-  -c = consider the role is exiting and is in the current directory" >&2
+  -C = your roles supports cluster mode" >&2
   exit 1
 }
 
@@ -23,7 +22,6 @@ bash_unit="bash_unit"
 ansible_cfg="ansible.cfg"
 
 privileged=1
-current=0
 cluster=0
 distribs=
 while getopts hcCD: option
@@ -31,9 +29,6 @@ do
   case $option in
     h)
       usage
-      ;;
-    c)
-      current=1
       ;;
     C)
       cluster=1
@@ -49,7 +44,6 @@ shift $(($OPTIND-1))
 
 [ $# -gt 0 ] && role=$1 || usage "le nom du rôle doit être passé en paramètre."
 role_dir=${base_dir}/roles/${role}
-[ $current -eq 1 ] && role_dir=${base_dir}
 
 if [ -n "${distribs}" ] ; then
   for distrib_name in $(echo ${distribs} | tr ":" " ")
@@ -81,9 +75,14 @@ cd ${role_dir}/tests
 [ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
 
 
-if [ ! -f "test_${role}_${default_distrib}" ]
+if [ -n "${distribs}" ] ; then
+  for distrib_name in $(echo ${distribs} | tr ":" " ")
+  do
+      suffix=$( [ ${cluster} -eq 1 ] && echo "_cluster" || echo "")
+      test_file="test_${role}_${distrib_name}${suffix}"
+    if [ ! -f "${test_file}" ]
 then
-  cat << __EOF__ >test_${role}_${default_distrib}
+  cat << __EOF__ >"${test_file}"
 #!/bin/bash
 
 test_failed() {
@@ -106,6 +105,8 @@ run_ansible() {
 }
 
 __EOF__
+fi
+done
 fi
 
 if [ -n "${distribs}" ] ; then
