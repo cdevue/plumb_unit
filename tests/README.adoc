@@ -1,5 +1,5 @@
-= Testing the tests
+= Testing plumb unit
 
-To run the tests, simply issue the follownig command :
+To run the tests, simply issue the following command :
 
- ./bash_unit tests_4_run_tests*
+ ./bash_unit tests*
