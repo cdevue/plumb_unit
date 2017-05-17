@@ -2,7 +2,7 @@
 
 usage() {
   [ $# -gt 0 ] && echo $@ >&2
-  echo "usage : $(basename $0) [-h] [-c] [-D DISTRIBS [-C]] role_name
+  echo "usage : $(basename $0) -D DISTRIBS [-h] [-c] [-C] role_name
   creates an ansible role with tests
   -h = display this help
   -D = specify a list of suported distributions for your role.
@@ -43,6 +43,8 @@ do
 done
 shift $(($OPTIND-1))
 
+[ -z "${distrib}" ] && usage "-D is a mandatory option"
+
 [ $# -gt 0 ] && role=$1 || usage "le nom du rôle doit être passé en paramètre."
 role_dir=${base_dir}/roles/${role}
 [ $current -eq 1 ] && role_dir=${base_dir}
@@ -64,11 +66,11 @@ cd ${role_dir}/tasks
 
 cd ${role_dir}/tests
 
-[ -f ${run_test} ] || cp ${tools}/${run_test} .
-[ -x ${run_test} ] || chmod +x ${run_test}
+[ -f ${run_test} ] || cp ${tools}/${run_test} .${run_test}
+[ -x ${run_test} ] || chmod +x .${run_test}
 
 [ -f ${bash_unit} ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
-[ -x ${bash_unit} ] || chmod +x ${run_test}
+[ -x ${bash_unit} ] || chmod +x ${bash_unit}
 
 [ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
 
@@ -102,8 +104,8 @@ fi
 if [ -n "${distribs}" ] ; then
   for distrib_name in $(echo ${distribs} | tr ":" " ")
   do
-    ln -s ${run_test} $(basename ${run_test} .sh)_${distrib_name}.sh
-    [ ${cluster} -eq 1 ] && ln -s ${run_test} $(basename ${run_test} .sh)_${distrib_name}_cluster.sh
+    ln -s .${run_test} $(basename ${run_test} .sh)_${distrib_name}.sh
+    [ ${cluster} -eq 1 ] && ln -s .${run_test} $(basename ${run_test} .sh)_${distrib_name}_cluster.sh
     cp test_${role} test_${role}_${distrib_name}
     [ ${cluster} -eq 1 ] && cp test_${role} test_${role}_${distrib_name}_cluster
   done
@@ -113,6 +115,12 @@ fi
 echo "role [${role}] created" >&2
 echo "to run tests :" >&2
 echo "  cd ${role_dir}/tests" >&2
-echo "  ./run_tests.sh" >&2
+echo -n "  and run one of :" >&2
+for distrib_name in $(echo ${distribs} | tr ":" " ")
+do
+  echo " ./$(basename ${run_test} .sh)_${distrib_name}.sh" >&2
+  [ ${cluster} -eq 1 ] && echo -n " ./$(basename ${run_test} .sh)_${distrib_name}_cluster.sh" >&2
+done
+echo >&2
 
 cd ${base_dir}
