@@ -1,7 +1,5 @@
 #!/bin/bash
 
-default_distrib=centos6
-
 usage() {
   [ $# -gt 0 ] && echo $@ >&2
   echo "usage : $(basename $0) -D DISTRIBS [-h] [-c] [-C] role_name
@@ -18,8 +16,6 @@ this_script=$(readlink -f $0)
 tools=$(readlink -f $(dirname ${this_script}))
 base_dir=$(readlink -f .)
 run_test="run_tests.sh"
-bash_unit="bash_unit"
-ansible_cfg="ansible.cfg"
 
 privileged=1
 cluster=0
@@ -54,26 +50,33 @@ if [ -n "${distribs}" ] ; then
   done
 fi
 
-mkdir -p ${role_dir}/{tasks,tests,meta}
+create_ansible_directory_tree() {
+  mkdir -p ${role_dir}/{tasks,tests,meta}
 
-cd ${role_dir}/tasks
+  cd ${role_dir}/tasks
+  [ -f main.yml ] || cp ${tools}/tasks/*.yml .
 
-[ -f main.yml ] || cp ${tools}/tasks/*.yml .
+  cd ${role_dir}/meta
+  [ -f main.yml ] || echo "dependencies: []" > main.yml
+}
 
-cd ${role_dir}/meta
+create_tests() {
+  local ansible_cfg="ansible.cfg"
+  local bash_unit="bash_unit"
 
-[ -f main.yml ] || echo "dependencies: []" > main.yml
+  cd ${role_dir}/tests
 
-cd ${role_dir}/tests
+  [ -f ${run_test} ] || cp ${tools}/${run_test} .${run_test}
+  [ -x ${run_test} ] || chmod +x .${run_test}
 
-[ -f ${run_test} ] || cp ${tools}/${run_test} .${run_test}
-[ -x ${run_test} ] || chmod +x .${run_test}
+  [ -f ${bash_unit} ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
+  [ -x ${bash_unit} ] || chmod +x ${bash_unit}
 
-[ -f ${bash_unit} ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
-[ -x ${bash_unit} ] || chmod +x ${bash_unit}
+  [ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
 
-[ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
-
+}
+create_ansible_directory_tree 
+create_tests
 
 if [ -n "${distribs}" ] ; then
   for distrib_name in $(echo ${distribs} | tr ":" " ")
@@ -114,8 +117,6 @@ if [ -n "${distribs}" ] ; then
   do
     ln -s .${run_test} $(basename ${run_test} .sh)_${distrib_name}.sh
     [ ${cluster} -eq 1 ] && ln -s .${run_test} $(basename ${run_test} .sh)_${distrib_name}_cluster.sh
-    cp test_${role} test_${role}_${distrib_name}
-    [ ${cluster} -eq 1 ] && cp test_${role} test_${role}_${distrib_name}_cluster
   done
   rm test_${role}
 fi
