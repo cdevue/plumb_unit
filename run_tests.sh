@@ -121,7 +121,7 @@ if [ $# -gt 0 ] ; then
 fi
 
 bash_unit="${inside_tests_path}/bash_unit"
-files_with_tests=$(find . | sed '/.*test_'${test_name}'.*'${distrib}${cluster}'$/!d;/~$/d' | sed "s:./:${inside_tests_path}/:g" | xargs)
+files_with_tests=$(find . | sed '/.*test_.*'${distrib}${cluster}'$/!d;/~$/d' | sed "s:./:${inside_tests_path}/:g" | xargs)
 run_test="${bash_unit} ${tests_list} ${files_with_tests}"
 
 container_base_name=$(echo ${test_name} | tr -d "_")
