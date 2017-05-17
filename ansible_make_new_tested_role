@@ -58,11 +58,15 @@ if [ -n "${distribs}" ] ; then
   done
 fi
 
-mkdir -p ${role_dir}/{tasks,tests}
+mkdir -p ${role_dir}/{tasks,tests,meta}
 
 cd ${role_dir}/tasks
 
 [ -f main.yml ] || cp ${tools}/tasks/*.yml .
+
+cd ${role_dir}/meta
+
+[ -f main.yml ] || echo "dependencies: []" > main.yml
 
 cd ${role_dir}/tests
 
