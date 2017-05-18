@@ -37,9 +37,9 @@ done
 shift $(($OPTIND-1))
 
 [ -z "${distribs}" ] && usage "-D is a mandatory option"
-
 [ $# -gt 0 ] && role=$1 || usage "le nom du rôle doit être passé en paramètre."
-role_dir=${base_dir}/roles/${role}
+
+role_dir=${base_dir}/${role}
 
 if [ -n "${distribs}" ] ; then
   for distrib_name in $(echo ${distribs} | tr ":" " ")

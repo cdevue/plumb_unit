@@ -2,14 +2,12 @@
 
 test_ansible_make_new_tested_role_creates_role_structure_for_jessie_when_distribution_specified() {
   ../ansible_make_new_tested_role -D jessie new_role_deb >/dev/null 2>&1
-  assert "diff -ur expected/new_role_deb roles/new_role_deb >&2"
+  assert "diff -ur expected/new_role_deb new_role_deb >&2"
+  rm -rf new_role_deb
 }
 
 test_ansible_make_new_tested_role_creates_role_structure_for_jessie_when_distribution_and_cluster_flag_specified() {
   ../ansible_make_new_tested_role -D jessie -C new_role_deb_clu >/dev/null 2>&1
-  assert "diff -ur expected/new_role_deb_clu roles/new_role_deb_clu >&2"
-}
-
-teardown() {
-  [ -d roles ] && rm -r roles
+  assert "diff -ur expected/new_role_deb_clu new_role_deb_clu >&2"
+  rm -rf new_role_deb_clu
 }
