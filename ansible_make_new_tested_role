@@ -13,7 +13,7 @@ usage() {
 }
 
 this_script=$(readlink -f $0)
-tools=$(readlink -f $(dirname ${this_script}))
+tools=$(readlink -f $(dirname ${this_script}))/template
 base_dir=$(readlink -f .)
 run_test="run_tests.sh"
 
@@ -54,7 +54,8 @@ create_ansible_directory_tree() {
   mkdir -p ${role_dir}/{tasks,tests,meta}
 
   cd ${role_dir}/tasks
-  [ -f main.yml ] || cp ${tools}/tasks/*.yml .
+  [ -f main.yml ] || cp ${tools}/tasks/main.yml .
+  [ -f interface.yml ] || cp ${tools}/tasks/interface.yml .
 
   cd ${role_dir}/meta
   [ -f main.yml ] || echo "dependencies: []" > main.yml
