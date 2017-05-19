@@ -54,12 +54,13 @@ fi
 create_ansible_directory_tree() {
   mkdir -p ${role_dir}/{tasks,tests,meta}
 
-  cd ${role_dir}/tasks
-  [ -f main.yml ] || cp ${tools}/tasks/main.yml .
-  [ -f interface.yml ] || cp ${tools}/tasks/interface.yml .
+  cd ${role_dir}
+  [ -f tasks/main.yml ] || cp ${tools}/tasks/main.yml tasks/
+  [ -f tasks/interface.yml ] || cp ${tools}/tasks/interface.yml tasks/
 
-  cd ${role_dir}/meta
-  [ -f main.yml ] || echo "dependencies: []" > main.yml
+  [ -f meta/main.yml ] || echo "dependencies: []" > meta/main.yml
+
+  [ -f .gitlab-ci.yml ] || printf "${role}:\n  script: unbuffer [ -s tasks/interface.yml ]\n" >.gitlab-ci.yml
 }
 
 create_tests() {
