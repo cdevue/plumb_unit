@@ -1,1 +1,1 @@
-../run_tests.sh
+../template/tests/run_tests.sh

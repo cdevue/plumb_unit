@@ -1,0 +1,11 @@
+= ansible role new_role_deb_clu
+
+== interface
+
+tasks/interface.yml
+
+== tests
+
+  enter ''tests/'' directory
+  and run one of : ./run_tests_jessie.sh
+  ./run_tests_jessie_cluster.sh

@@ -16,6 +16,7 @@ this_script=$(readlink -f $0)
 tools=$(readlink -f $(dirname ${this_script}))/template
 base_dir=$(readlink -f .)
 run_test="run_tests.sh"
+run_test_full_path=${tools}/tests/${run_test}
 
 privileged=1
 cluster=0
@@ -44,7 +45,7 @@ role_dir=${base_dir}/${role}
 if [ -n "${distribs}" ] ; then
   for distrib_name in $(echo ${distribs} | tr ":" " ")
   do
-    if [ $(grep "^${distrib_name}$" <(${tools}/${run_test} -q | tr ' ' '\n') | wc -l ) -ne 1 ] ; then
+    if [ $(grep "^${distrib_name}$" <(${run_test_full_path} -q | tr ' ' '\n') | wc -l ) -ne 1 ] ; then
       usage "${distrib_name} is not a supported distribution"
     fi
   done
@@ -67,13 +68,13 @@ create_tests() {
 
   cd ${role_dir}/tests
 
-  [ -f ${run_test} ] || cp ${tools}/${run_test} .${run_test}
+  [ -f ${run_test} ] || cp ${run_test_full_path} .${run_test}
   [ -x ${run_test} ] || chmod +x .${run_test}
 
   [ -f ${bash_unit} ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
   [ -x ${bash_unit} ] || chmod +x ${bash_unit}
 
-  [ -f ${ansible_cfg} ] || cp ${tools}/${ansible_cfg} .
+  [ -f ${ansible_cfg} ] || cp ${tools}/tests/${ansible_cfg} .
 
 }
 create_ansible_directory_tree 
@@ -122,14 +123,39 @@ if [ -n "${distribs}" ] ; then
 fi
 
 echo "role [${role}] created" >&2
-echo "to run tests :" >&2
-echo "  cd ${role_dir}/tests" >&2
-echo -n "  and run one of :" >&2
-for distrib_name in $(echo ${distribs} | tr ":" " ")
-do
-  echo " ./$(basename ${run_test} .sh)_${distrib_name}.sh" >&2
-  [ ${cluster} -eq 1 ] && echo -n " ./$(basename ${run_test} .sh)_${distrib_name}_cluster.sh" >&2
-done
-echo >&2
+
+generate_test_doc() {
+    echo "  enter ''tests/'' directory"
+    echo -n "  and run one of :"
+    for distrib_name in $(echo ${distribs} | tr ":" " ")
+    do
+      echo " ./$(basename ${run_test} .sh)_${distrib_name}.sh"
+      [ ${cluster} -eq 1 ] && echo -n "  ./$(basename ${run_test} .sh)_${distrib_name}_cluster.sh" 
+    done
+}
+
+generate_doc() {
+  local r=$1
+  echo "= ansible role ${r}"
+  echo
+  echo "== interface"
+  echo
+  echo "tasks/interface.yml"
+  echo
+  echo "== tests"
+  echo
+  generate_test_doc
+  echo
+} 
+
+display_doc() {
+  local r=$1
+  echo "cd ${r}"
+  generate_test_doc
+}
+
+readme="${role_dir}/README.adoc"
+generate_doc ${role} > ${readme}
+display_doc ${role}
 
 cd ${base_dir}
