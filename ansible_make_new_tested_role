@@ -118,7 +118,6 @@ if [ -n "${distribs}" ] ; then
     ln -s .${run_test} $(basename ${run_test} .sh)_${distrib_name}.sh
     [ ${cluster} -eq 1 ] && ln -s .${run_test} $(basename ${run_test} .sh)_${distrib_name}_cluster.sh
   done
-  rm test_${role}
 fi
 
 echo "role [${role}] created" >&2
