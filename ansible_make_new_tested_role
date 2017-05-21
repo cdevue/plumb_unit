@@ -1,5 +1,14 @@
 #!/bin/bash
 
+this_script=$(readlink -f $0)
+tools=$(readlink -f $(dirname ${this_script}))/template
+base_dir=$(readlink -f .)
+run_test="run_tests.sh"
+run_test_full_path=${tools}/tests/${run_test}
+supported_distribs=$($run_test_full_path -q)
+privileged=1
+cluster=0
+distribs=
 usage() {
   [ $# -gt 0 ] && echo $@ >&2
   echo "usage : $(basename $0) -D DISTRIBS [-h] [-c] [-C] role_name
@@ -7,20 +16,11 @@ usage() {
   -h = display this help
   -D = specify a list of suported distributions for your role.
        DISTRIBS is a list of distributions separated by ':'
-       supported_distribs are : $(${tools}/${run_test} -q)
+       supported_distribs are : ${supported_distribs}
   -C = your roles supports cluster mode" >&2
   exit 1
 }
 
-this_script=$(readlink -f $0)
-tools=$(readlink -f $(dirname ${this_script}))/template
-base_dir=$(readlink -f .)
-run_test="run_tests.sh"
-run_test_full_path=${tools}/tests/${run_test}
-
-privileged=1
-cluster=0
-distribs=
 while getopts hcCD: option
 do
   case $option in
@@ -60,7 +60,7 @@ create_ansible_directory_tree() {
 
   [ -f meta/main.yml ] || echo "dependencies: []" > meta/main.yml
 
-  [ -f .gitlab-ci.yml ] || printf "${role}:\n  script: unbuffer [ -s tasks/interface.yml ]\n" >.gitlab-ci.yml
+  [ -f .gitlab-ci.yml ] || printf "${role}:\n  script: unbuffer [ -s tasks/interface.yml ]\n" >.gitlab-ci.yml
 }
 
 create_tests() {
