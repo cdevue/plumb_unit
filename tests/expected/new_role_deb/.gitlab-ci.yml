@@ -1,2 +1,2 @@
-new_role_deb:
-  script: unbuffer [ -s tasks/interface.yml ]
+prevent_interface_is_empty:
+  script: unbuffer test -s tasks/interface.yml
