@@ -1,0 +1,2 @@
+new_role_deb:
+  script: unbuffer [ -s tasks/interface.yml ]
