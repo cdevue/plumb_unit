@@ -5,11 +5,13 @@ tools=$(readlink -f $(dirname ${this_script}))/template
 base_dir=$(readlink -f .)
 run_test="run_tests.sh"
 run_test_full_path=${tools}/tests/${run_test}
-supported_distribs=$($run_test_full_path -q)
 privileged=1
 cluster=0
 distribs=
+
 usage() {
+  local supported_distribs=$($run_test_full_path -q)
+
   [ $# -gt 0 ] && echo $@ >&2
   echo "usage : $(basename $0) -D DISTRIBS [-h] [-c] [-C] role_name
   creates an ansible role with tests
@@ -60,7 +62,7 @@ create_ansible_directory_tree() {
 
   [ -f meta/main.yml ] || echo "dependencies: []" > meta/main.yml
 
-  [ -f .gitlab-ci.yml ] || printf "${role}:\n  script: unbuffer [ -s tasks/interface.yml ]\n" >.gitlab-ci.yml
+  [ -f .gitlab-ci.yml ] || printf "prevent_interface_is_empty:\n  script: unbuffer test -s tasks/interface.yml\n" >.gitlab-ci.yml
 }
 
 create_tests() {
