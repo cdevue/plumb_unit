@@ -1,2 +1,1 @@
-prevent_interface_is_empty:
-  script: unbuffer test -s tasks/interface.yml
+../new_role_deb/.gitlab-ci.yml
