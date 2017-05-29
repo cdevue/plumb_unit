@@ -4,7 +4,7 @@ image:https://travis-ci.org/multimediabs/plumb_unit.svg?branch=master[Build Stat
 
 Plumb unit creates roles with testing framework or adds testing framework to existing role.
 
-Place yourself in the root dir of your roles and launch :
+Place yourself in the root dir of your roles and launch:
 
  /path/to/plumb_unit/ansible_make_new_tested_role my-new-role
 
@@ -12,7 +12,7 @@ This will create a _roles_ directory in which the _my_new_role_ is created. The 
 
 == Using default testing environment
 
-To run tests for your role, you can then go to the tests directory and run them :
+To run tests for your role, you can then go to the tests directory and run them:
 
  cd roles/my-new-role/tests
  ./run_tests.sh
@@ -21,7 +21,7 @@ This exemple will run tests in a centos6 container. It will run all tests found 
 
 == specifying distribution and version
 
-To run test on a specific distribution, make a link for run_tests.sh ending with _distribution :
+To run test on a specific distribution, make a link for run_tests.sh ending with _distribution:
 
  ln -s run_tests.sh run_tests_jessie.sh
  ./run_tests_jessie.sh
@@ -30,7 +30,7 @@ This will run tests in _test_my-new-role*_jessie_.
 
 == cluster tests
 
-cluster tests will be run by adding _cluster suffix to link and tests files :
+cluster tests will be run by adding _cluster suffix to link and tests files:
 
  ln -s run_tests.sh run_tests_jessie_cluster.sh
  ./run_tests_jessie_cluster.sh
