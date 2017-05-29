@@ -1,2 +1,2 @@
 prevent_interface_is_empty:
-  script: test -s tasks/interface.yml || (echo "tasks/interface.yml not found or empty" && return 1)
+  script: test -s tasks/interface.yml || (echo "tasks/interface.yml not found or empty" && exit 1)
