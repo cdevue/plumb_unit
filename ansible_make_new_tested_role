@@ -62,7 +62,7 @@ create_ansible_directory_tree() {
 
   [ -f meta/main.yml ] || echo "dependencies: []" > meta/main.yml
 
-  [ -f .gitlab-ci.yml ] || printf "prevent_interface_is_empty:\n  script: unbuffer test -s tasks/interface.yml\n" >.gitlab-ci.yml
+  [ -f .gitlab-ci.yml ] || cp ${tools}/.gitlab-ci.yml .
 }
 
 create_tests() {
