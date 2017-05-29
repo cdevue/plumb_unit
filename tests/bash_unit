@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 #   bash unit testing enterprise edition framework for professionals
 #   Copyright (C) 2011-2016 Pascal Grange
@@ -16,6 +16,8 @@
 #
 #  https://github.com/pgrange/bash_unit
 
+VERSION=snapshot
+
 ESCAPE=$(printf "\033")
 NOCOLOR="${ESCAPE}[0m"
 RED="${ESCAPE}[91m"
@@ -28,9 +30,9 @@ fail() {
   local stdout=$2
   local stderr=$3
 
-  notify_test_failed $__bash_unit_current_test__ "$message"
-  [[ ! -z $stdout ]] && [ -s $stdout ] && cat $stdout | notify_stdout
-  [[ ! -z $stderr ]] && [ -s $stderr ] && cat $stderr | notify_stderr
+  notify_test_failed "$__bash_unit_current_test__" "$message"
+  [[ ! -z $stdout ]] && [ -s "$stdout" ] && notify_stdout < "$stdout"
+  [[ ! -z $stderr ]] && [ -s "$stderr" ] && notify_stderr < "$stderr"
 
   stacktrace | notify_stack
   exit 1
@@ -74,13 +76,13 @@ _assert_expression() {
   (
     local stdout=$(mktemp)
     local stderr=$(mktemp)
-    trap "rm  -f $stdout $stderr" EXIT
+    trap "rm  -f \"$stdout\" \"$stderr\"" EXIT
 
     local status
-    eval "($assertion)" >$stdout 2>$stderr && status=$? || status=$?
-    if ! eval $condition
+    eval "($assertion)" >"$stdout" 2>"$stderr" && status=$? || status=$?
+    if ! eval "$condition"
     then
-      fail "$(eval echo $message)" $stdout $stderr
+      fail "$(eval echo $message)" "$stdout" "$stderr"
     fi
   ) || exit $?
 }
@@ -121,16 +123,16 @@ fake() {
 
 stacktrace() {
   local i=1
-  while ! [ -z ${BASH_SOURCE[$i]} ]
+  while ! [ -z "${BASH_SOURCE[$i]}" ]
   do
     echo ${BASH_SOURCE[$i]}:${BASH_LINENO[$((i-1))]}:${FUNCNAME[$i]}\(\)
-    i=$(($i + 1))
-  done | grep -v ^$BASH_SOURCE
+    i=$((i + 1))
+  done | grep -v "^$BASH_SOURCE"
 }
 
 run_test_suite() {
   local failure=0
-  for test in $(set | grep  -E '^test.* ()' | grep -E "$test_pattern" | sed -e 's: .*::')
+  for test in $(set | grep  -E '^test.* \(\)' | grep -E "$test_pattern" | sed -e 's: .*::')
   do
     (
       local status=0
@@ -139,7 +141,7 @@ run_test_suite() {
       declare -F | grep ' teardown$' >/dev/null && teardown
       exit $status
     )
-    failure=$(( $? || $failure))
+    failure=$(( $? || failure))
   done
   return $failure
 }
@@ -147,49 +149,21 @@ run_test_suite() {
 run_test() {
   set -e
   notify_test_starting "$__bash_unit_current_test__"
-  $__bash_unit_current_test__ && notify_test_succeeded "$__bash_unit_current_test__"
+  "$__bash_unit_current_test__" && notify_test_succeeded "$__bash_unit_current_test__"
 }
 
 usage() {
   echo "$1" >&2
-  echo "$0 [-f <output format<] [-p <pattern1>] [-p <pattern2>]... <test_file1> <test_file2>..." >&2
+  echo "$0 [-f <output format>] [-p <pattern1>] [-p <pattern2>]... <test_file1> <test_file2>..." >&2
   echo >&2
   echo "Runs tests in test files that match <pattern>s" >&2
-  echo "<output format> is optionnal only supported value is tap" >&2
+  echo "<output format> is optional only supported value is tap" >&2
+  echo "-v to get current version information" >&2
   echo "See https://github.com/pgrange/bash_unit" >&2
   exit 1
 }
 
 # Formating
-
-color() {
-  local color=$1
-  shift
-  if [ -t 1 ] ; then echo -en "$color" ; fi
-  if [ $# -gt 0 ]
-  then
-    echo $*
-  else
-    cat
-  fi
-  if [ -t 1 ] ; then echo -en "$NOCOLOR" ; fi
-}
-
-pretty_format() {
-  local color="$1"
-  local pretty_symbol="$2"
-  local alt_symbol="$3"
-  [ -t 1 ] && local term=true || local term=false
-  (
-    cat
-    if $term
-    then
-      echo -en " $pretty_symbol "
-    else
-      [[ ! -z "$alt_symbol" ]] && echo -en " $alt_symbol "
-    fi
-  ) | color "$color"
-}
 
 pretty_success() {
   pretty_format "$GREEN" "\u2713" "$1"
@@ -199,9 +173,52 @@ pretty_failure() {
   pretty_format "$RED" "\u2717" "$1"
 }
 
+pretty_format() {
+  local color="$1"
+  local pretty_symbol="$2"
+  local alt_symbol="$3"
+  local term_utf8=false
+  if is_terminal && [[ "$LANG" =~ .*UTF-8.* ]]
+  then
+    term_utf8=true
+  fi
+  (
+    cat
+    if $term_utf8
+    then
+      echo -en " $pretty_symbol "
+    else
+      [[ ! -z "$alt_symbol" ]] && echo -en " $alt_symbol "
+    fi
+  ) | color "$color"
+}
+
+color() {
+  _start_color() {
+    if is_terminal ; then echo -en "$color" ; fi
+  }
+  _stop_color() {
+    if is_terminal ; then echo -en "$NOCOLOR" ; fi
+  }
+  local color=$1
+  shift
+  _start_color
+  if [ $# -gt 0 ]
+  then
+    echo $*
+  else
+    cat
+  fi
+  _stop_color
+}
+
+is_terminal() {
+  [ -t 1 ] || [[ "${FORCE_COLOR}" == true ]]
+}
+
 text_format() {
   notify_suite_starting() {
-    test_file="$1"
+    local test_file="$1"
     echo "Running tests in $test_file"
   }
   notify_test_starting() {
@@ -219,10 +236,10 @@ text_format() {
     [[ -z $message  ]] || printf -- "$message\n"
   }
   notify_stdout() {
-    sed 's:^:out> :' | color $GREEN
+    sed 's:^:out> :' | color "$GREEN"
   }
   notify_stderr() {
-    sed 's:^:err> :' | color $RED
+    sed 's:^:err> :' | color "$RED"
   }
   notify_stack() {
     color "$YELLOW"
@@ -231,7 +248,7 @@ text_format() {
 
 tap_format() {
   notify_suite_starting() {
-    test_file="$1"
+    local test_file="$1"
     echo "# Running tests in $test_file"
   }
   notify_test_starting() {
@@ -250,10 +267,10 @@ tap_format() {
     [[ -z $message  ]] || printf -- "$message\n" | sed -u -e 's/^/# /'
   }
   notify_stdout() {
-    sed 's:^:# out> :' | color $GREEN
+    sed 's:^:# out> :' | color "$GREEN"
   }
   notify_stderr() {
-    sed 's:^:# err> :' | color $RED
+    sed 's:^:# err> :' | color "$RED"
   }
   notify_stack() {
     sed 's:^:# :' | color "$YELLOW"
@@ -263,7 +280,7 @@ tap_format() {
 output_format=text
 test_pattern=""
 separator=""
-while getopts "p:f:" option
+while getopts "vp:f:" option
 do
   case "$option" in
     p)
@@ -272,6 +289,10 @@ do
       ;;
     f)
       output_format="${OPTARG}"
+      ;;
+    v)
+      echo "bash_unit $VERSION"
+      exit
       ;;
     ?|:)
       usage
@@ -282,8 +303,8 @@ shift $((OPTIND-1))
 
 for test_file in "$@"
 do
-  test -e $test_file || usage "file does not exist: $test_file"
-  test -r $test_file || usage "can not read file: $test_file"
+  test -e "$test_file" || usage "file does not exist: $test_file"
+  test -r "$test_file" || usage "can not read file: $test_file"
 done
 
 case "$output_format" in
@@ -305,9 +326,9 @@ do
   notify_suite_starting "$test_file"
   (
     source "$test_file"
-    cd $(dirname "$test_file")
+    cd "$(dirname "$test_file")"
     run_test_suite
   )
-  failure=$(( $? || $failure))
+  failure=$(( $? || failure))
 done
 exit $failure
