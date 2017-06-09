@@ -10,6 +10,10 @@ Place yourself in the root dir of your roles and launch:
 
 This will create a _roles_ directory in which the _my_new_role_ is created. The role itself only contains an empty tasks/main.yml and a tests directory.
 
+== Prerequisites
+* link:view-source:https://docker.io[docker]
+* link:view-source:https://www.nist.gov/services-resources/software/expect[expect]
+
 == Using default testing environment
 
 To run tests for your role, you can then go to the tests directory and run them:
