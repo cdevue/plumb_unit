@@ -80,7 +80,7 @@ create_tests() {
   [ -f ${ansible_cfg} ] || cp ${tools}/tests/${ansible_cfg} .
 
 }
-create_ansible_directory_tree 
+create_ansible_directory_tree
 create_tests
 
 if [ -n "${distribs}" ] ; then
@@ -94,7 +94,7 @@ then
 #!/bin/bash
 
 test_failed() {
-  run_ansible 
+  run_ansible
   assert_equals "false" "true"
 }
 
@@ -111,7 +111,6 @@ EOF
 run_ansible() {
   assert "sudo -u rpaulson ansible-playbook --verbose --diff -i 'localhost,' --connection=local /tmp/ansible/playbook.yml"
 }
-
 __EOF__
 fi
 done
@@ -133,7 +132,7 @@ generate_test_doc() {
     for distrib_name in $(echo ${distribs} | tr ":" " ")
     do
       echo " ./$(basename ${run_test} .sh)_${distrib_name}.sh"
-      [ ${cluster} -eq 1 ] && echo -n "  ./$(basename ${run_test} .sh)_${distrib_name}_cluster.sh" 
+      [ ${cluster} -eq 1 ] && echo -n "  ./$(basename ${run_test} .sh)_${distrib_name}_cluster.sh"
     done
 }
 
@@ -149,7 +148,7 @@ generate_doc() {
   echo
   generate_test_doc
   echo
-} 
+}
 
 display_doc() {
   local r=$1

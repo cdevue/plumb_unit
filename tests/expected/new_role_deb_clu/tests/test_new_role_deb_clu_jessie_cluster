@@ -1,7 +1,7 @@
 #!/bin/bash
 
 test_failed() {
-  run_ansible 
+  run_ansible
   assert_equals "false" "true"
 }
 
@@ -18,4 +18,3 @@ EOF
 run_ansible() {
   assert "sudo -u rpaulson ansible-playbook --verbose --diff -i 'localhost,' --connection=local /tmp/ansible/playbook.yml"
 }
-
