@@ -1,6 +1,6 @@
 FROM debian:wheezy
 
-MAINTAINER cc_doc_nfc.oab@orange.com <cc_doc_nfc.oab@orange.com>   
+MAINTAINER cc_doc_nfc.oab@orange.com <cc_doc_nfc.oab@orange.com>
 
 VOLUME [ "/sys/fs/cgroup" ]
 

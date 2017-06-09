@@ -19,11 +19,11 @@ start_container() {
   local container="$1"
   # sad, but if I don't do this and run two times it tries to build while removal in progress.
   docker ps -a | grep ${container} >/dev/null 2>&1 &&  sleep 1
-  
+
   docker ps -a --format="{{.Names}}" | grep '^'${container}'$' >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
   eval echo "Running docker with flags [${docker_flags}]" ${output}
   container_id=$(docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image})
-  
+
   if grep jessie <(echo $distrib_name) >/dev/null
   then
     #wait for systemd to be ready
@@ -31,7 +31,7 @@ start_container() {
     #wait for tmpfiles cleaner to be started so that it does not clean /tmp while tests are running
     while ! docker exec $container systemctl status systemd-tmpfiles-clean.timer >/dev/null ; do sleep 1 ; done
   fi
-  
+
   if grep wheezy <(echo $distrib_name) >/dev/null
   then
     tst_file=$(docker exec $container mktemp)
