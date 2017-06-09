@@ -1,0 +1,27 @@
+# This is not an official image!
+FROM pritunl/archlinux
+
+MAINTAINER cc_doc_nfc.oab@orange.com <cc_doc_nfc.oab@orange.com>
+
+VOLUME [ "/sys/fs/cgroup", "/sys/fs/cgroup/systemd" ]
+
+ENV container docker
+
+RUN pacman -Syu
+RUN pacman -S --noconfirm \
+      ansible \
+      git \
+      python \
+      make \
+      sudo \
+      systemd-sysvcompat
+
+ADD files/locale.gen /etc/locale.gen
+RUN locale-gen
+ENV LANG fr_FR.UTF-8
+
+# Add a local user to avoid running ansible as root. This user has a name
+RUN useradd -ms /bin/bash -c "Robert Paulson" rpaulson
+RUN echo "rpaulson ALL=(root) NOPASSWD: ALL" >> /etc/sudoers
+
+CMD ["/sbin/init"]
