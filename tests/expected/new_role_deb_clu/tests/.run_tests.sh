@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-managed_distribs="jessie wheezy centos6"
+managed_distribs="jessie wheezy centos6 archlinux"
 
 usage() {
   echo "$*
@@ -72,6 +72,7 @@ then
   [ "${distrib_name}" == "jessie" ] && docker_image="multimediabs/plumb_unit:debian_jessie" && init=systemd
   [ "${distrib_name}" == "wheezy" ] && docker_image="multimediabs/plumb_unit:debian_wheezy"
   [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
+  [ "${distrib_name}" == "archlinux" ] && docker_image="multimediabs/plumb_unit:archlinux"
 else
   #echo "No distribution specified. Running tests for $(echo ${docker_image} | sed 's/^.*://')"
   distrib=_centos6 # we do not want $distrib_name to be set here
