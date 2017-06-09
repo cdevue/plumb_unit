@@ -12,7 +12,7 @@ expect {
 }
 send "cat /etc/issue.net\n"
 expect {
-  timeout { send_user "Did not match debian version\n"; exit 1 }
+  timeout { send_user "Did not match centos version\n"; exit 1 }
   "CentOS release 6"
 }
 send "exit\n"
