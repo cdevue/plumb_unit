@@ -18,7 +18,7 @@ usage: $(basename $0) [-d] [-v] [-h] [test1 test2 ...]
 start_container() {
   local container="$1"
   # sad, but if I don't do this and run two times it tries to build while removal in progress.
-  docker ps -a | grep ${container} >/dev/null 2>&1 &&  sleep 1
+  while (docker ps -a | grep ${container} >/dev/null 2>&1); do sleep 1 ; done
 
   docker ps -a --format="{{.Names}}" | grep '^'${container}'$' >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
   eval echo "Running docker with flags [${docker_flags}]" ${output}
