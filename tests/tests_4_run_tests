@@ -50,24 +50,22 @@ test_v_option_launches_verbose_docker() {
 #  assert "grep -e 'Sending build context to Docker daemon' /tmp/expect.$$" "expected verbose docker output didn't come"
 #  assert "grep -e 'Successfully built' /tmp/expect.$$" "expected verbose docker output didn't come"
   assert "grep -e 'Running docker with flags' /tmp/expect.$$" "expected verbose docker output didn't come"
-  rm /tmp/expect.$$
 }
 
 test_mounts_common_roles_in_etc_ansible_roles() {
   assert "./run_tests.sh roles_in_etc_ansible_roles"
 }
 
-test_multiple_test_files() {
+test_plumb_unit_runs_all_tests_from_multiple_test_files() {
   cat > test_plumb_unit_2_centos6 <<EOF
 #!/bin/bash
 ${test_prefix}is_one_equal_to_one() { assert_equals 1 1 "oups"; }
 EOF
-  assert "./run_tests.sh -p one_equal_to_one | wc -l > /tmp/expect.$$ 2>&1"
-  # Following expects 4 lines in the output :
-  # 2 telling which test file is played
-  # 2 for the one test in each test file
-  assert_equals "4" "$(cat /tmp/expect.$$)" "there is less than 2 tests played"
-  rm /tmp/expect.$$ test_plumb_unit_2_centos6
+
+  ./run_tests.sh > /tmp/expect.$$ 2>&1
+
+  assert "grep test_plumb_unit_2_centos6 /tmp/expect.$$"
+  assert "grep test_plumb_unit_centos6 /tmp/expect.$$"
 }
 
 setup() {
@@ -85,6 +83,7 @@ teardown() {
   rm run_tests_*.sh 2>/dev/null
   [ -L roles/plumb_unit ] && rm roles/plumb_unit
   [ -d roles ] && rmdir roles/
+  rm -f /tmp/expect.$$
 }
 
 assert "expect -v" "expect needs to be installed to run this tests"

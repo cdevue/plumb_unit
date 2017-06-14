@@ -9,6 +9,7 @@ usage: $(basename $0) [-d] [-v] [-h] [test1 test2 ...]
         -d : activates debug mode
         -v : gets verbose (mainly outputs docker outputs)
         -q : query the list of managed distributions
+        -p : run tests matching a given pattern
         -h : this help
         If tests names are passed as arguments, only those will run. Default is to run all tests.
 "
@@ -22,7 +23,7 @@ start_container() {
 
   docker ps -a --format="{{.Names}}" | grep '^'${container}'$' >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
   eval echo "Running docker with flags [${docker_flags}]" ${output}
-  container_id=$(docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image})
+  docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image}
 
   if grep jessie <(echo $distrib_name) >/dev/null
   then
@@ -95,7 +96,7 @@ inside_tests_path="${inside_roles_path}/${test_name}/tests"
 verbose_flag=0
 debug_flag=0
 
-while getopts vhdq name
+while getopts vhdqp name
 do
   case $name in
     v)
