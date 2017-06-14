@@ -18,6 +18,7 @@ install:
   - docker pull multimediabs/plumb_unit:centos6
   - docker pull multimediabs/plumb_unit:debian_jessie
   - docker pull multimediabs/plumb_unit:debian_wheezy
+  - docker pull multimediabs/plumb_unit:archlinux
 
 script:
   - ./bash_unit tests/tests*

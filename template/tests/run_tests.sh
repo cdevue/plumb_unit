@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-managed_distribs="jessie wheezy centos6"
+managed_distribs="jessie wheezy centos6 archlinux"
 
 usage() {
   echo "$*
@@ -18,7 +18,7 @@ usage: $(basename $0) [-d] [-v] [-h] [test1 test2 ...]
 start_container() {
   local container="$1"
   # sad, but if I don't do this and run two times it tries to build while removal in progress.
-  docker ps -a | grep ${container} >/dev/null 2>&1 &&  sleep 1
+  while (docker ps -a | grep ${container} >/dev/null 2>&1); do sleep 1 ; done
 
   docker ps -a --format="{{.Names}}" | grep '^'${container}'$' >/dev/null 2>&1 && docker rm --force ${container} >/dev/null
   eval echo "Running docker with flags [${docker_flags}]" ${output}
@@ -72,6 +72,7 @@ then
   [ "${distrib_name}" == "jessie" ] && docker_image="multimediabs/plumb_unit:debian_jessie" && init=systemd
   [ "${distrib_name}" == "wheezy" ] && docker_image="multimediabs/plumb_unit:debian_wheezy"
   [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
+  [ "${distrib_name}" == "archlinux" ] && docker_image="multimediabs/plumb_unit:archlinux"
 else
   #echo "No distribution specified. Running tests for $(echo ${docker_image} | sed 's/^.*://')"
   distrib=_centos6 # we do not want $distrib_name to be set here
