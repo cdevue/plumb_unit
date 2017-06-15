@@ -96,7 +96,7 @@ inside_tests_path="${inside_roles_path}/${test_name}/tests"
 verbose_flag=0
 debug_flag=0
 
-while getopts vhdqp name
+while getopts "vhdqp:" name
 do
   case $name in
     v)
@@ -109,6 +109,9 @@ do
       echo ${managed_distribs}
       exit
       ;;
+    p)
+      list_of_patterns+=("-p $OPTARG")
+      ;;
     h)
       usage
       ;;
@@ -118,13 +121,9 @@ shift $((OPTIND-1))
 
 [ $verbose_flag -eq 0 ] && output=">/dev/null 2>&1" || output="2>&1"
 
-if [ $# -gt 0 ] ; then
-  tests_list=$(echo $@ | tr ' ' '\n' | sed 's/^/-p /' | xargs)
-fi
-
 bash_unit="${inside_tests_path}/bash_unit"
 files_with_tests=$(find . | sed '/.*test_.*'${distrib}${cluster}'$/!d;/~$/d' | sed "s:./:${inside_tests_path}/:g" | xargs)
-run_test="${bash_unit} ${tests_list} ${files_with_tests}"
+run_test="${bash_unit} ${list_of_patterns[@]} ${files_with_tests}"
 
 container_base_name=$(echo ${test_name} | tr -d "_")
 containers=${container_base_name}
