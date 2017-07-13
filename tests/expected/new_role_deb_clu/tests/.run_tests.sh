@@ -164,7 +164,7 @@ else
   if [ ${cluster_mode} -eq 0 ]
   then
     [ $debug_flag -eq 1 ] && run_test=/bin/bash
-    docker exec ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; cd ${inside_tests_path} ; ${run_test}"
+    docker exec -e ftp_proxy="${ftp_proxy}" ${docker_exec_flags} $container /bin/bash -c "exec >/dev/tty 2>/dev/tty </dev/tty ; cd ${inside_tests_path} ; ${run_test}"
     result=$?
   else
     mkdir -p roles
