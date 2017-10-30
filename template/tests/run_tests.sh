@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-managed_distribs="jessie wheezy centos6 archlinux"
+managed_distribs="jessie wheezy stretch centos6 archlinux"
 
 usage() {
   echo "$*
@@ -25,7 +25,7 @@ start_container() {
   eval echo "Running docker with flags [${docker_flags}]" ${output}
   docker run -d ${docker_flags} ${docker_volumes} --name=${container} --hostname=${container} ${docker_image}
 
-  if grep jessie <(echo $distrib_name) >/dev/null
+  if grep -E "jessie|stretch" <(echo $distrib_name) >/dev/null
   then
     #wait for systemd to be ready
     while ! docker exec $container systemctl status >/dev/null ; do sleep 1 ; done
@@ -70,6 +70,7 @@ grep _cluster <(basename $0) >/dev/null && cluster_mode=1
 if [ $distrib_name ]
 then
   distrib=_${distrib_name}
+  [ "${distrib_name}" == "stretch" ] && docker_image="multimediabs/plumb_unit:debian_stretch" && init=systemd
   [ "${distrib_name}" == "jessie" ] && docker_image="multimediabs/plumb_unit:debian_jessie" && init=systemd
   [ "${distrib_name}" == "wheezy" ] && docker_image="multimediabs/plumb_unit:debian_wheezy"
   [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
