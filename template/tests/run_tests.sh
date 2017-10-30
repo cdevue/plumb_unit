@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-managed_distribs="jessie wheezy stretch centos6 archlinux"
+managed_distribs="jessie wheezy stretch centos6 centos7 archlinux"
 
 usage() {
   echo "$*
@@ -73,6 +73,7 @@ then
   [ "${distrib_name}" == "stretch" ] && docker_image="multimediabs/plumb_unit:debian_stretch" && init=systemd
   [ "${distrib_name}" == "jessie" ] && docker_image="multimediabs/plumb_unit:debian_jessie" && init=systemd
   [ "${distrib_name}" == "wheezy" ] && docker_image="multimediabs/plumb_unit:debian_wheezy"
+  [ "${distrib_name}" == "centos7" ] && docker_image="multimediabs/plumb_unit:centos7" && init=systemd
   [ "${distrib_name}" == "centos6" ] && docker_image="multimediabs/plumb_unit:centos6"
   [ "${distrib_name}" == "archlinux" ] && docker_image="multimediabs/plumb_unit:archlinux"
 else

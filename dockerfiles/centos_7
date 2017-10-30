@@ -1,0 +1,18 @@
+FROM centos:7
+
+MAINTAINER cc_doc_nfc.oab@orange.com <cc_doc_nfc.oab@orange.com>
+
+VOLUME [ "/sys/fs/cgroup" ]
+
+ENV container docker
+
+RUN yum -y update ; \
+    yum install -y sudo vim git epel-release ; \
+    yum install -y ansible ; \
+    yum clean all
+
+# Add a local user to avoid running ansible as root. This user has a name
+RUN useradd -ms /bin/bash -c "Robert Paulson" rpaulson
+RUN echo "rpaulson ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/rpaulson
+
+CMD ["/sbin/init"]

@@ -2,7 +2,7 @@
 
 test_q_option_lists_supported_distributions() {
   distributions=$(./run_tests.sh -q)
-  assert_equals "jessie wheezy stretch centos6 archlinux" "${distributions}" "distribution list does not match"
+  assert_equals "jessie wheezy stretch centos6 centos7 archlinux" "${distributions}" "distribution list does not match"
 }
 
 test_do_not_run_cluster_tests_when_not_in_cluster_mode() {

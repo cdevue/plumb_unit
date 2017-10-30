@@ -15,6 +15,7 @@ addons:
 install:
   - curl -o bash_unit "https://raw.githubusercontent.com/pgrange/bash_unit/master/bash_unit"
   - chmod +x bash_unit
+  - docker pull multimediabs/plumb_unit:centos7
   - docker pull multimediabs/plumb_unit:centos6
   - docker pull multimediabs/plumb_unit:debian_stretch
   - docker pull multimediabs/plumb_unit:debian_jessie
