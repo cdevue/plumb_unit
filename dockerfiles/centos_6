@@ -8,7 +8,7 @@ ENV container docker
 
 RUN yum -y update; yum clean all
 RUN yum install -y sudo vim git epel-release
-RUN yum install -y ansible
+RUN yum install -y ansible python-dns
 
 # Add a local user to avoid running ansible as root. This user has a name
 RUN useradd -ms /bin/bash -c "Robert Paulson" rpaulson
