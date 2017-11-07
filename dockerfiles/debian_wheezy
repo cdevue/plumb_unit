@@ -14,7 +14,8 @@ RUN apt-get update && \
                        git sudo aptitude vim \
                        libffi-dev libssl-dev curl \
                        net-tools
-RUN pip install -i https://pypi.python.org/simple/ PyYAML jinja2 cffi pycparser paramiko ansible dnspython
+RUN pip install -i https://pypi.python.org/simple/ PyYAML jinja2 cffi pycparser dnspython
+RUN pip install -i https://pypi.python.org/simple/ paramiko ansible
 
 #Optimize first run of apt ansible module
 RUN ansible -i localhost, -c local all -m apt -a "update_cache=yes"
