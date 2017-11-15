@@ -2,8 +2,6 @@ FROM debian:stretch-slim
 
 MAINTAINER cc_doc_nfc.oab@orange.com <cc_doc_nfc.oab@orange.com>
 
-VOLUME [ "/sys/fs/cgroup" ]
-
 ENV container docker
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -56,7 +54,6 @@ RUN set -x && \
 ENV DIND_COMMIT 3b5fac462d21ca164b3778647420016315289034
 RUN curl -o /usr/local/bin/dind "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" \
     && chmod +x /usr/local/bin/dind
-VOLUME /var/lib/docker
 EXPOSE 2375
 
 ### Start systemd, be a system
