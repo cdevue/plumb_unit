@@ -2,31 +2,45 @@
 
 image:https://travis-ci.org/multimediabs/plumb_unit.svg?branch=master[Build Status,link=https://travis-ci.org/multimediabs/plumb_unit]
 
-Plumb unit creates roles with testing framework or adds testing framework to existing role.
+Plumb unit creates https://www.ansible.com[ansible] roles with https://github.com/pgrange/bash_unit[bash_unit] testing framework or adds testing framework to existing role.
 
-Place yourself in the root dir of your roles and launch:
+Launch the following command to create a skeleton to *my-new-role* for _centos7_. :
 
- /path/to/plumb_unit/ansible_make_new_tested_role my-new-role
+ /path/to/plumb_unit/ansible_make_new_tested_role -D centos7 my_new_role
 
-This will create a _roles_ directory in which the _my_new_role_ is created. The role itself only contains an empty tasks/main.yml and a tests directory.
+This will create a _my_new_role_ directory with the following structure.
+```
+my_new_role
+├── meta
+│   └── main.yml
+├── README.adoc
+├── tasks
+│   ├── interface.yml
+│   └── main.yml
+└── tests
+    ├── ansible.cfg
+    ├── bash_unit
+    ├── run_tests_centos7.sh -> .run_tests.sh
+    └── test_my_new_role_centos7
+```
 
 == Using default testing environment
 
 To run tests for your role, you can then go to the tests directory and run them:
 
- cd roles/my-new-role/tests
- ./run_tests.sh
+ cd tests
+ ./run_tests_centos7.sh
 
-This exemple will run tests in a centos6 container. It will run all tests found in files named _test_my-new-role*_centos6_.
+This exemple will run tests in a centos7 container from https://hub.docker.com/r/multimediabs/plumb_unit/tags[docker hub]. It will run all tests found in files named with pattern _test_my-new-role*_centos7_.
 
 == specifying distribution and version
 
-To run test on a specific distribution, make a link for run_tests.sh ending with _distribution:
+To run test on a specific distribution, make a link for .run_tests.sh ending with _distribution:
 
- ln -s run_tests.sh run_tests_jessie.sh
+ ln -s .run_tests.sh run_tests_jessie.sh
  ./run_tests_jessie.sh
 
-This will run tests in _test_my-new-role*_jessie_.
+This will run tests from _test_my-new-role*_jessie_ file.
 
 == cluster tests
 
