@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ### Packages installation layer
 RUN apt-get update && apt-get -y dist-upgrade ; \
     apt-get install -y systemd-sysv systemd initscripts ; \
-    apt-get install -y locales git sudo vim net-tools curl ; \
+    apt-get install -y iproute2 locales git sudo vim net-tools curl ; \
     apt-get install -y libffi-dev libssl-dev libyaml-dev ; \
     apt-get install -y python python-crypto python-dev python-pip ; \
     apt-get remove -y manpages manpages-dev ; \
