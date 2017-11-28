@@ -13,7 +13,8 @@ RUN apt-get update && \
     apt-get install -y locales python-pip python-dev \
                        git sudo aptitude vim \
                        libffi-dev libssl-dev curl \
-                       net-tools
+                       net-tools procps
+
 RUN pip install -i https://pypi.python.org/simple/ PyYAML jinja2 cffi pycparser dnspython
 RUN pip install -i https://pypi.python.org/simple/ paramiko ansible
 
