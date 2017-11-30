@@ -1,10 +1,10 @@
 #!/bin/bash
 
 this_script=$(readlink -f $0)
-tools=$(readlink -f $(dirname ${this_script}))/template
+template_dir=$(readlink -f $(dirname ${this_script}))/template
 base_dir=$(readlink -f .)
 run_test="run_tests.sh"
-run_test_full_path=${tools}/tests/${run_test}
+run_test_full_path=${template_dir}/tests/${run_test}
 privileged=1
 cluster=0
 distribs=
@@ -57,12 +57,12 @@ create_ansible_directory_tree() {
   mkdir -p ${role_dir}/{tasks,tests,meta}
 
   cd ${role_dir}
-  [ -f tasks/main.yml ] || cp ${tools}/tasks/main.yml tasks/
-  [ -f tasks/interface.yml ] || cp ${tools}/tasks/interface.yml tasks/
+  [ -f tasks/main.yml ] || cp ${template_dir}/tasks/main.yml tasks/
+  [ -f tasks/interface.yml ] || cp ${template_dir}/tasks/interface.yml tasks/
 
   [ -f meta/main.yml ] || echo "dependencies: []" > meta/main.yml
 
-  [ -f .gitlab-ci.yml ] || cp ${tools}/.gitlab-ci.yml .
+  [ -f .gitlab-ci.yml ] || cp ${template_dir}/.gitlab-ci.yml .
 }
 
 create_tests() {
@@ -77,7 +77,7 @@ create_tests() {
   [ -f ${bash_unit} ] || bash <(curl -Ss https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh) >/dev/null 2>&1
   [ -x ${bash_unit} ] || chmod +x ${bash_unit}
 
-  [ -f ${ansible_cfg} ] || cp ${tools}/tests/${ansible_cfg} .
+  [ -f ${ansible_cfg} ] || cp ${template_dir}/tests/${ansible_cfg} .
 
 }
 create_ansible_directory_tree
@@ -89,31 +89,11 @@ if [ -n "${distribs}" ] ; then
       suffix=$( [ ${cluster} -eq 1 ] && echo "_cluster" || echo "")
       test_file="test_${role}_${distrib_name}${suffix}"
     if [ ! -f "${test_file}" ]
-then
-  cat << __EOF__ >"${test_file}"
-#!/bin/bash
-
-test_failed() {
-  run_ansible
-  assert_equals "false" "true"
-}
-
-setup() {
-  mkdir /tmp/ansible/group_vars -p
-
-  cat << EOF > /tmp/ansible/playbook.yml
-- hosts: all
-  roles:
-    - role: ${role}
-EOF
-}
-
-run_ansible() {
-  assert "sudo -u rpaulson ansible-playbook --verbose --diff -i 'localhost,' --connection=local /tmp/ansible/playbook.yml"
-}
-__EOF__
-fi
-done
+    then
+      cp "${template_dir}/tests/test_ROLE_NAME" ${test_file}
+      sed -i "s/{{ROLE_NAME}}/${role}/" ${test_file}
+    fi
+  done
 fi
 
 if [ -n "${distribs}" ] ; then
