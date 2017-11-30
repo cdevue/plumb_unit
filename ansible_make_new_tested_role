@@ -40,7 +40,7 @@ done
 shift $(($OPTIND-1))
 
 [ -z "${distribs}" ] && usage "-D is a mandatory option"
-[ $# -gt 0 ] && role=$1 || usage "le nom du rôle doit être passé en paramètre."
+[ $# -gt 0 ] && role=$1 || usage "missing role_name"
 
 role_dir=${base_dir}/${role}
 
