@@ -11,3 +11,10 @@ test_ansible_make_new_tested_role_creates_role_structure_for_jessie_when_distrib
   assert "diff -ur expected/new_role_deb_clu new_role_deb_clu >&2"
   rm -rf new_role_deb_clu
 }
+test_parameters_for_ansible_make_new_tested_role() {
+  local amntr=../ansible_make_new_tested_role
+  assert_fail "${amntr}" "-D is mandatory"
+  assert_fail "${amntr} -D jessie" "missing role name "
+  assert_fail "${amntr} -D unsupported_distrib role_name" "unsupported distribution"
+  assert_fail "${amntr} -h" "display help"
+}
