@@ -135,10 +135,16 @@ if [ -f /.dockerenv -a $(id -u) -eq 0 ]
 then
   ${run_test}
 else
-  if [ -f Dockerfile_${distrib_name} ]
+  if [ -f "Dockerfile_${distrib_name}" -o -f "Dockerfile" ]
   then
+    if [ -f "Dockerfile_${distrib_name}" ]
+    then
+      dockerfile_file="Dockerfile_${distrib_name}"
+    else
+      dockerfile_file="Dockerfile"
+    fi
     format ${BLUE} -n "Building ${test_name} ${docker_build_flags} container..."
-    eval docker build -f Dockerfile_${distrib_name} -t ${test_name} ${docker_build_flags} . ${output} || exit 42
+    eval docker build -f ${dockerfile_file} -t ${test_name} ${docker_build_flags} . ${output} || exit 42
     format ${GREEN} "DONE"
     docker_image=${test_name}
   fi
