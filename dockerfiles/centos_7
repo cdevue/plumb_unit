@@ -11,6 +11,21 @@ RUN yum -y update ; \
     yum install -y ansible python-dns ; \
     yum clean all
 
+RUN ( \
+      cd /lib/systemd/system/sysinit.target.wants/ && \
+      rm -f $(ls | grep -v systemd-tmpfiles-setup.service) \
+    ) && \
+    rm -f /lib/systemd/system/multi-user.target.wants/* && \
+    rm -f /etc/systemd/system/*.wants/* && \
+    rm -f /lib/systemd/system/local-fs.target.wants/* && \
+    rm -f /lib/systemd/system/sockets.target.wants/*udev* && \
+    rm -f /lib/systemd/system/sockets.target.wants/*initctl* && \
+    rm -f /lib/systemd/system/basic.target.wants/* &&\
+    rm -f /lib/systemd/system/anaconda.target.wants/* &&\
+    rm -f /usr/lib/tmpfiles.d/systemd-nologin.conf && \
+    rm -f /lib/systemd/system/systemd*udev* && \
+    rm -f /lib/systemd/system/getty.target
+
 # Add a local user to avoid running ansible as root. This user has a name
 RUN useradd -ms /bin/bash -c "Robert Paulson" rpaulson
 RUN echo "rpaulson ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/rpaulson
