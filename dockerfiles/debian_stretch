@@ -40,6 +40,7 @@ ADD files/locale.gen /etc/locale.gen
 RUN locale-gen
 ENV LANG fr_FR.UTF-8
 ENV TERM xterm
+RUN for i in $(seq 1 8) ; do mkdir -p /usr/share/man/man$i ; done; \
 
 ### Add a local user to avoid running ansible as root. This user has a name
 RUN useradd -ms /bin/bash -c "Robert Paulson" rpaulson
