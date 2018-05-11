@@ -7,8 +7,6 @@ VOLUME [ "/sys/fs/cgroup" ]
 ENV container docker
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update && apt-get -y dist-upgrade
-
 RUN (cd /lib/systemd/system/sysinit.target.wants/ ;\
      rm -f $(ls | grep -v systemd-tmpfiles-setup.service))
 RUN rm -f /lib/systemd/system/multi-user.target.wants/*;\
@@ -23,19 +21,16 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/*;\
 RUN rm -f /lib/systemd/system/systemd*udev* ; \
     rm -f /lib/systemd/system/getty.target;
 
-RUN apt-get update
+RUN apt-get update && apt-get -y dist-upgrade ; \
+    apt-get install -y iproute2 locales git sudo vim net-tools curl ; \
+    apt-get install -y libffi-dev libssl-dev libyaml-dev ; \
+    apt-get install -y python python-crypto python-openssl python-dev python-pip ; \
+    apt-get remove -y manpages manpages-dev ; \
+    apt-get clean
 
-RUN apt-get install -y locales git sudo aptitude vim net-tools curl
-RUN apt-get install -y libffi-dev libssl-dev libyaml-dev
-RUN apt-get install -y python-crypto
-RUN apt-get install -y python python-dev
-RUN apt-get install -y python-pip
-
-RUN pip install --upgrade setuptools
-RUN pip install --upgrade PyYAML dnspython pyasn1 jinja2 paramiko ansible
-
-
-# Optimize first run of apt ansible module
+### Ansible installation with pip and optimize first run of apt ansible module
+RUN pip install --upgrade setuptools ; \
+    pip install --upgrade PyYAML dnspython pyOpenSSL pyasn1 jinja2 paramiko ansible
 RUN ansible -i localhost, -c local all -m apt -a "update_cache=yes"
 
 ADD files/locale.gen /etc/locale.gen
