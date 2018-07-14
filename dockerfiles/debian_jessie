@@ -22,7 +22,7 @@ RUN rm -f /lib/systemd/system/systemd*udev* ; \
     rm -f /lib/systemd/system/getty.target;
 
 RUN apt-get update && apt-get -y dist-upgrade ; \
-    apt-get install -y aptitude iproute2 locales git sudo vim net-tools curl ; \
+    apt-get install -y aptitude iproute2 locales git sudo vim net-tools curl lsb-release ; \
     apt-get install -y libffi-dev libssl-dev libyaml-dev ; \
     apt-get install -y python python-crypto python-openssl python-dev python-pip ; \
     apt-get remove -y manpages manpages-dev ; \
