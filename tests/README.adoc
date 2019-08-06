@@ -7,6 +7,7 @@ To run tests, you will need all plumb_unit dockers :
 
  docker pull multimediabs/plumb_unit:centos7
  docker pull multimediabs/plumb_unit:centos6
+ docker pull multimediabs/plumb_unit:debian_buster
  docker pull multimediabs/plumb_unit:debian_stretch
  docker pull multimediabs/plumb_unit:debian_jessie
  docker pull multimediabs/plumb_unit:debian_wheezy
