@@ -29,7 +29,8 @@ RUN apt-get update && apt-get -y dist-upgrade ; \
     apt-get clean
 
 ### Ansible installation with pip and optimize first run of apt ansible module
-RUN pip install --upgrade setuptools ; \
+RUN pip install --upgrade 'pip<10.0' ; \
+    pip install --upgrade 'setuptools<45' ; \
     pip install --upgrade PyYAML dnspython pyOpenSSL pyasn1 jinja2 paramiko ansible
 RUN ansible -i localhost, -c local all -m apt -a "update_cache=yes"
 
